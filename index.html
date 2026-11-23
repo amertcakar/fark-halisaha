@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f8a4c">
+<title>Fark Halı Saha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f7f1; --card:#ffffff; --ink:#16301f; --green:#1d5c34; --green2:#2f8a4c; --grass1:#2f8a4c; --grass2:#297a43;
+    --muted:#5f7568; --faint:#9bb0a3; --line:#dfe7da; --mine:#e3f2e3;
+    --yellow:#ffe14d; --teal:#13a89e; --yellow-ink:#3d3200; --red:#c8402a; --amber:#b9770e;
+    --display:"Barlow Condensed","Arial Narrow",sans-serif; --mono:"Barlow Condensed","Arial Narrow",sans-serif;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Barlow",system-ui,sans-serif;font-size:16px;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  button,input,select{font:inherit;color:inherit}
+  a{color:inherit}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(14px + env(safe-area-inset-top)) 0 10px}
+  .mark{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--green)}
+  .mark b{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:3px;line-height:1}
+  .mark span{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:.3px}
+  .me-btn{display:flex;align-items:center;text-decoration:none}
+  .me-btn i{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:600;font-size:16px}
+  .demo{font-size:12px;font-weight:600;background:var(--yellow);color:var(--yellow-ink);padding:4px 9px;border-radius:999px}
+
+  /* alt menü */
+  .nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+  .nav div{display:flex;max-width:720px;width:100%}
+  .nav a{flex:1;text-align:center;text-decoration:none;color:var(--faint);font-size:12px;font-weight:600;padding:9px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .nav a svg{width:22px;height:22px}
+  .nav a.on{color:var(--green)}
+  .nav a.on svg{background:var(--mine);border-radius:999px;padding:2px 12px;width:46px;box-sizing:content-box;height:22px;margin:-2px 0}
+
+  /* saha başlığı (çizgili çim) */
+  .pitch{position:relative;overflow:hidden;color:#fff;border-radius:var(--r);background:repeating-linear-gradient(90deg,var(--grass1) 0 44px,var(--grass2) 44px 88px)}
+  .pitch::before{content:"";position:absolute;inset:8px;border:2px solid rgba(255,255,255,.5);border-radius:6px;pointer-events:none}
+  .pitch::after{content:"";position:absolute;left:50%;top:8px;bottom:8px;border-left:2px solid rgba(255,255,255,.35);pointer-events:none}
+  .pitch > *{position:relative;z-index:1}
+  .pitch .circle{position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;border:2px solid rgba(255,255,255,.35);border-radius:50%;z-index:0}
+  .board{padding:22px 22px 20px;margin-top:6px}
+  .status{font-size:13px;font-weight:600;letter-spacing:.5px;display:inline-flex;align-items:center;gap:7px;background:rgba(0,0,0,.18);padding:4px 10px;border-radius:999px}
+  .status i{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block}
+  .status.closed i{background:#ff8a75}
+  .day{font-family:var(--display);font-weight:700;font-size:clamp(44px,12vw,64px);line-height:1;margin:12px 0 2px}
+  .date{font-size:17px;font-weight:500}
+  .place{margin-top:6px;font-size:15px;opacity:.95}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .olink{display:inline-flex;align-items:center;gap:7px;border:1.5px solid rgba(255,255,255,.75);color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:9px 13px;border-radius:10px;background:rgba(0,0,0,.08)}
+  .olink.lime{background:#fff;border-color:#fff;color:var(--green)}
+  .olink svg{width:15px;height:15px}
+
+  .count{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:20px 0 10px}
+  .big{font-family:var(--display);font-weight:700;font-size:48px;line-height:1;color:var(--green)}
+  .big span{color:var(--faint)}
+  .meta{font-size:14px;color:var(--muted);text-align:right;line-height:1.5}
+  .ticks{display:grid;gap:4px}
+  .ticks i{height:10px;background:var(--line);border-radius:3px}
+  .ticks i.on{background:var(--green2)}
+
+  .vote{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .q{font-family:var(--display);font-weight:700;font-size:26px;margin:0 0 2px;color:var(--green)}
+  .q.bench{color:var(--amber)} .q.out{color:var(--muted)} .q.ban{color:var(--red)}
+  .qsub{color:var(--muted);font-size:15px;margin:0 0 14px}
+  .vbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .vb{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:15px 10px;font-weight:700;font-size:16px;cursor:pointer;color:var(--ink)}
+  .vb.yes{background:var(--green);border-color:var(--green);color:#fff}
+  .vb.sel{background:var(--ink);border-color:var(--ink);color:#fff}
+  .vb.yes.sel{background:var(--green2);border-color:var(--green2)}
+  .vb:disabled{opacity:.4;cursor:not-allowed}
+  .mypos{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:14px;color:var(--muted)}
+  .mypos b{color:var(--ink);font-weight:600}
+  .textbtn{background:none;border:0;padding:0;font-size:14px;color:var(--green);font-weight:600;text-decoration:none;cursor:pointer}
+  .textbtn.red{color:var(--red)}
+
+  .sec{margin-top:28px}
+  .sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px 8px}
+  .sh h2{font-family:var(--display);font-weight:700;font-size:24px;margin:0;color:var(--ink)}
+  .sh .n{font-size:14px;color:var(--muted);font-weight:500}
+  .h1{font-family:var(--display);font-weight:700;font-size:clamp(36px,10vw,48px);line-height:1;margin:18px 0 6px;color:var(--green)}
+  .list{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .li{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--line);min-height:48px;background:var(--card)}
+  .list > .li:first-child{border-top:0}
+  a.li{text-decoration:none}
+  .li .no{font-size:14px;font-weight:600;color:var(--faint);width:24px;flex:none}
+  .li .nm{flex:1;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .li .tm{font-size:13px;color:var(--faint);flex:none}
+  .li.empty .nm{color:var(--faint);font-weight:400}
+  .li.mine{background:var(--mine)}
+  .li.menu{background:#fafcf8;flex-wrap:wrap;gap:8px}
+  .bench .no{color:var(--amber)}
+  .tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:1px;background:var(--mine);color:var(--green)}
+  .tag.red{background:#fbe3de;color:var(--red)}
+  .tag.y{background:var(--yellow);color:var(--yellow-ink)}
+  .pos{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.3px;flex:none}
+  .x{background:none;border:0;cursor:pointer;color:var(--faint);font-size:20px;line-height:1;padding:2px 4px}
+  .outs{display:flex;flex-wrap:wrap;gap:6px 14px;padding:12px 14px;color:var(--muted);font-size:15px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+  .outs span{text-decoration:line-through;text-decoration-color:var(--faint)}
+  .hint{color:var(--muted);font-size:14px;margin:10px 2px 0;line-height:1.45}
+  .chev{color:var(--faint);font-size:18px}
+  .sub2{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:1px;overflow:hidden;text-overflow:ellipsis}
+  .nm a,.king a,.mvp a,.ns a,.hint a{text-decoration:none} .hint a{color:var(--green);font-weight:600}
+
+  .pp{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+  .pc{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 4px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;color:var(--ink)}
+  .pc.on{border-color:var(--green);background:var(--green);color:#fff}
+  .pc b{background:var(--yellow);color:var(--yellow-ink);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px}
+  @media (max-width:420px){ .pc{font-size:13px} .mark span{display:none} }
+
+  .teams{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .team{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--card)}
+  .team .th{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;background:var(--teal);color:#fff}
+  .team.b .th{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
+  .team .th b{font-family:var(--display);font-weight:700;font-size:22px}
+  .team .th span{font-size:13px;font-weight:500;opacity:.85}
+  .line{display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-top:1px solid var(--line)}
+  .line:first-of-type{border-top:0}
+  .line .ab{font-size:12px;font-weight:700;color:var(--green2);width:22px;flex:none;padding-top:2px}
+  .line .ns{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+  .line .ns span{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .line .ns sup{font-size:10px;color:var(--amber);margin-left:3px;font-weight:700}
+  .line .ns .rot{color:var(--muted);font-weight:400;font-style:italic}
+  .line .ns em{font-style:normal;font-size:12px;color:var(--muted);margin-left:4px}
+  .tnote{font-size:13px;color:var(--muted);margin:10px 2px 0;line-height:1.45}
+  .badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--mine);color:var(--green)}
+  .badge.y{background:var(--yellow);color:var(--yellow-ink)}
+
+  .score .circle,.king .circle{opacity:.45}
+  .score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:22px 16px;margin-top:10px;text-align:center}
+  .score .t{font-family:var(--display);font-weight:700;font-size:24px}
+  .score .t.a{color:#7ff0e4}
+  .score .s{font-family:var(--display);font-weight:700;font-size:54px;padding:0 10px;line-height:1}
+  .score .sub{grid-column:1/-1;font-size:14px;margin-top:8px;opacity:.95}
+  .mvp{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--yellow);color:var(--yellow-ink);border-radius:var(--r);padding:14px 16px;margin-top:10px}
+  .mvp small{font-size:13px;font-weight:600}
+  .mvp b{font-family:var(--display);font-weight:700;font-size:26px}
+
+  .king{display:grid;grid-template-columns:1fr auto;align-items:end;gap:12px;padding:20px 22px;margin-top:10px}
+  .king.dark{background:var(--yellow);color:var(--yellow-ink)}
+  .king small{font-size:13px;font-weight:600;opacity:.95}
+  .king .who{font-family:var(--display);font-weight:700;font-size:clamp(28px,8vw,40px);line-height:1;margin-top:4px;word-break:break-word}
+  .king .g{font-family:var(--display);font-weight:700;font-size:52px;line-height:.9;text-align:right}
+  .king .g span{display:block;font-size:13px;font-weight:600}
+  .seg{display:flex;background:#e8efe4;border-radius:10px;padding:3px;margin:18px 0 10px;gap:3px}
+  .seg button{flex:1;background:none;border:0;padding:9px 4px;font-size:14px;font-weight:600;cursor:pointer;border-radius:8px;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(22,48,31,.12)}
+  .tblw{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  table.tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:12px;font-weight:600;color:var(--muted);text-align:right;padding:10px 8px;border-bottom:1px solid var(--line);background:#fafcf8}
+  .tbl th:nth-child(2){text-align:left}
+  .tbl td{padding:11px 8px;border-top:1px solid var(--line);text-align:right;font-size:15px}
+  .tbl tr:first-child td{border-top:0}
+  .tbl td:first-child{color:var(--faint);width:30px;text-align:left;font-weight:600}
+  .tbl td:nth-child(2){text-align:left;font-weight:500;max-width:0;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tbl td:nth-child(2) a{text-decoration:none}
+  .tbl td.hl{font-weight:700;color:var(--green)}
+  .tbl tr.mine td{background:var(--mine)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:14px}
+  .grid div{background:var(--card);padding:14px 12px}
+  .grid b{display:block;font-family:var(--display);font-size:32px;font-weight:700;line-height:1;color:var(--green)}
+  .grid small{font-size:12px;font-weight:600;color:var(--muted)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:0}
+  .panel h3{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--ink)}
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fg .full{grid-column:1/-1}
+  label.f{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px}
+  .fg label.f{margin-bottom:0}
+  label.f span{display:block;margin-bottom:5px}
+  label.f em{font-style:normal;color:var(--faint);font-weight:400}
+  input[type=text],input[type=date],input[type=time],input[type=number],input[type=password],input[inputmode],select{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px}
+  input:focus,select:focus{outline:none;border-color:var(--green2);box-shadow:0 0 0 3px rgba(47,138,76,.15)}
+  .pin{letter-spacing:8px;font-size:22px!important;text-align:center}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .btn{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 15px;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;color:var(--ink)}
+  .btn.pri{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.lime{background:#25d366;border-color:#25d366;color:#fff}
+  .btn.danger{border-color:#f0c2b8;color:var(--red)}
+  .btn.full{width:100%;padding:14px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .inline{display:flex;gap:8px}
+  .inline input,.inline select{flex:1;min-width:0}
+  .res .li{gap:8px 10px;flex-wrap:wrap}
+  .res .li .nm{flex:1 1 calc(100% - 40px)}
+  .res .li .tsw{margin-left:30px}
+  .res .li.off .nm{color:var(--faint);text-decoration:line-through}
+  .step{display:flex;align-items:center;gap:3px}
+  .step b{display:inline-block;min-width:22px;text-align:center;font-weight:700}
+  .step button{width:32px;height:32px;border:1.5px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;color:var(--ink)}
+  .step small{font-size:12px;color:var(--faint);font-weight:700;margin-right:2px}
+  .tsw{border:1.5px solid var(--line);border-radius:999px;font-size:12px;font-weight:700;padding:6px 10px;cursor:pointer;background:#fff;min-width:64px;color:var(--muted)}
+  .tsw.A{background:var(--teal);border-color:var(--teal);color:#fff} .tsw.B{background:#fff;border-color:var(--ink);color:var(--ink)}
+  .tag.ta{background:#d5f5f2;color:#0b6e68}
+  .chk{width:22px;height:22px;accent-color:var(--green);flex:none}
+  .ed select{width:auto;padding:7px 8px;font-size:14px;border-radius:8px}
+
+  /* MVP oylama */
+  .ballot{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .ballot .bh{padding:14px 16px;background:var(--yellow);color:var(--yellow-ink)}
+  .ballot .bh b{font-family:var(--display);font-size:22px;font-weight:700;display:block}
+  .ballot .bh small{font-size:14px}
+  .opt{display:flex;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer;background:#fff;width:100%;border-left:0;border-right:0;border-bottom:0;text-align:left;font-size:16px}
+  .opt:first-of-type{border-top:0}
+  .opt .rad{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none}
+  .opt.sel .rad{border:7px solid var(--green)}
+  .opt[disabled]{color:var(--faint);cursor:not-allowed}
+  .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:4px}
+  .bar i{display:block;height:100%;background:var(--green2)}
+
+  /* giriş */
+  .auth{max-width:420px;margin:0 auto;padding:calc(28px + env(safe-area-inset-top)) 20px 40px}
+  .auth .hero{padding:26px 20px 22px;text-align:center;margin-bottom:22px}
+  .auth .hero b{font-family:var(--display);font-weight:800;font-size:48px;letter-spacing:6px;line-height:1;display:block}
+  .auth .hero small{font-size:15px;opacity:.95}
+  .auth .seg{margin:0 0 16px}
+  .err{color:var(--red);font-size:15px;margin:10px 0 0;min-height:1em}
+  .demo-note{font-size:13px;color:var(--muted);border:1.5px dashed var(--line);padding:10px 12px;border-radius:10px;margin-top:22px;line-height:1.6}
+
+  .notice{padding:44px 8px;text-align:center;color:var(--muted)}
+  .notice b{display:block;color:var(--green);font-family:var(--display);font-size:28px;font-weight:700;margin-bottom:6px}
+  .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,24px);opacity:0;background:var(--ink);color:#fff;font-size:15px;font-weight:500;padding:11px 16px;border-radius:12px;transition:.2s;pointer-events:none;max-width:90vw;text-align:center;z-index:9}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .mtabs{display:flex;gap:8px;overflow-x:auto;margin:6px 0 10px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+  .mtab{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 14px;text-align:left;cursor:pointer;min-width:118px;color:var(--ink)}
+  .mtab b{display:block;font-family:var(--display);font-size:19px;color:var(--green);font-weight:700}
+  .mtab small{font-size:13px;color:var(--muted)}
+  .mtab.on{border-color:var(--green2);background:var(--mine)}
+  .why{display:block;font-size:12px;color:var(--amber);font-weight:600;margin-top:1px}
+  .codebox{font-family:var(--display);font-size:40px;font-weight:700;letter-spacing:6px;color:var(--green);text-align:center;background:#fff;border-radius:12px;padding:10px;margin:6px 0}
+  .ed .li.off .nm{color:var(--faint)}
+  .btn svg{width:16px;height:16px}
+  .ed select:disabled{opacity:.4}
+
+  /* sade arayüz */
+  .me-btn{gap:7px;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:3px 12px 3px 3px;color:var(--green);font-weight:600;font-size:14px}
+  .me-btn i{width:30px;height:30px;font-size:14px}
+  .posrow .mypos{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+  .posrow .pp{margin-top:14px}
+  .line{flex-direction:column;gap:3px}
+  .line .ab{width:auto;padding:0;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .meta b{color:var(--ink)}
+
+  /* FARK logosu */
+  :root{--navy:#24496a}
+  .brand{font-family:"Cinzel",Georgia,serif;font-weight:700;color:var(--navy);background:linear-gradient(180deg,#4677a3,#1c3d5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .mark{gap:9px;align-items:center}
+  .mark svg{height:34px;width:auto;display:block}
+  .mark span{font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:13px;letter-spacing:2.5px;color:var(--navy);background:linear-gradient(180deg,#4677a3,#1c3d5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;padding-top:6px}
+  .auth .hero{background:none;padding:18px 0 6px;margin-bottom:26px;text-align:center;cursor:default;-webkit-tap-highlight-color:transparent;user-select:none}
+  .auth .hero svg{width:min(240px,70%);height:auto;display:block;margin:0 auto}
+  .auth .hero small{display:block;margin-top:10px;font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:17px;letter-spacing:7px;opacity:1;color:var(--navy);background:linear-gradient(180deg,#4677a3,#1c3d5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  @media (max-width:420px){ .mark span{display:inline;font-size:11px;letter-spacing:1.8px} .mark svg{height:28px} }
+  @media (max-width:350px){ .mark span{display:none} }
+  .board::after{display:none}
+  .vote .q{margin-bottom:14px}
+  /* arama */
+  [hidden]{display:none!important}
+  .srch{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:0 12px;margin:0 0 10px}
+  .srch:focus-within{border-color:var(--green2)}
+  .srch svg{width:18px;height:18px;color:var(--faint);flex:none}
+  .srch input{border:0;outline:0;background:none;flex:1;min-width:0;padding:12px 0;font-size:16px}
+  .srch input::-webkit-search-cancel-button{cursor:pointer}
+  .btn.more{width:100%;margin-top:10px;justify-content:center}
+</style>
+</head>
+<body>
+<div id="root"><div class="notice">Yükleniyor…</div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* =========================================================
+   AYARLAR — Firebase kurulumundan sonra burayı doldur.
+   Boş bırakılırsa site DEMO modunda (sahte verilerle) açılır.
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyDvc3de0JJV7HsTdmCZo-irfv7-lEVdDh8",
+  authDomain: "fark-halisaha.firebaseapp.com",
+  projectId: "fark-halisaha",
+  appId: "1:156629277422:web:ae1e50be5e36fbe6b671ff"
+};
+const MASTER_NAME = "derinfark";            // ana admin hesabının sitede görünen adı
+const DOMAIN = "farkhalisaha.app";          // giriş e-postaları için sahte alan adı (değiştirme)
+const pinToPassword = (no, pin) => `fhs-${pin}-${no}`;
+const RESET_MINUTES = 15;                   // şifre sıfırlama kodunun geçerlilik süresi
+
+const CONFIGURED = !!firebaseConfig.apiKey;
+const OFFLINE = "Sunucuya ulaşılamadı. İnternet bağlantını kontrol et.";
+const QUOTA = "Sitenin bugünkü ücretsiz kullanım sınırı doldu. Her gün 10.00-11.00 arasında sıfırlanır, sonra tekrar dene.";
+let quotaHit = false;
+const DEMO = !CONFIGURED && typeof demoApi === "function";
+const NAME_RE = /^[A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû .'-]{5,40}$/;
+const TS_KEYS = ["startAt", "voteFrom", "voteUntil", "until", "createdAt", "banUntil"];
+// Otomatik kilit: 10 dakikada en fazla 30 değişiklik; aşan hesap 24 saat kilitlenir (sunucu kuralı da aynısı)
+const ACT_MAX = 30, ACT_WIN = 10 * 60000, ACT_LOCK = 24 * 3600000, ACT_WARN = 20;
+
+/* =========================================================
+   VERİ KATMANI — Firebase
+   Koleksiyonlar: players, logins, admins, matches, signups, ballots, results, resets, claims
+   ========================================================= */
+async function firebaseApi(){
+  const base = "https://www.gstatic.com/firebasejs/10.14.1/";
+  const { initializeApp } = await import(base + "firebase-app.js");
+  const A = await import(base + "firebase-auth.js");
+  const F = await import(base + "firebase-firestore.js");
+  const app = initializeApp(firebaseConfig);
+  const auth = A.getAuth(app);
+  // Telefonda yerel önbellek: kısa sürede tekrar açılınca veriler baştan okunmaz (kota tasarrufu)
+  let db; try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); } catch(_){ db = F.getFirestore(app); }
+  const d = (...p) => F.doc(db, ...p), col = n => F.collection(db, n);
+  const ms = v => v && v.toMillis ? v.toMillis() : (typeof v === "number" ? v : 0);
+  const fixTs = o => { for (const k of TS_KEYS.concat(["at"])) if (o[k] && o[k].toMillis) o[k] = o[k].toMillis(); return o; };
+  const rows = s => s.docs.map(x => fixTs({ id: x.id, ...x.data({ serverTimestamps: "estimate" }) }));
+  const tsIn = o => { const r = { ...o }; for (const k of TS_KEYS) if (typeof r[k] === "number") r[k] = F.Timestamp.fromMillis(r[k]); return r; };
+  const noFromEmail = e => String(e || "").split("@")[0].split(".")[0];
+  let busyAuth = false, authCb = null, unsubs = [], actUnsubs = [], actKey = null, cbRef = null;
+  // --- canlı veri + yıllık arşiv birleştirme
+  let live = { m: {}, r: {} }, hist = {}, got = { m: false, h: false, r: false };
+  const rawM = id => live.m[id] || (hist[id] && hist[id].m) || null;
+  const rawR = id => live.r[id] || (hist[id] && hist[id].r) || null;
+  function emitMR(){
+    if (!cbRef || !got.m || !got.h) return;
+    const M = { ...Object.fromEntries(Object.entries(hist).map(([k, e]) => [k, e.m])), ...live.m };
+    cbRef("matches", Object.entries(M).map(([id, x]) => fixTs({ id, ...x })));
+    if (!got.r) return;
+    const Rs = {}; for (const [k, e] of Object.entries(hist)) if (e.r && !live.m[k]) Rs[k] = e.r;
+    Object.assign(Rs, live.r);
+    cbRef("results", Object.entries(Rs).map(([id, x]) => fixTs({ id, ...x })));
+  }
+  const yearOf = m => "y" + (/^\d{4}/.test(String(m && m.date)) ? String(m.date).slice(0, 4) : "0000");
+  function histPut(b, id, m, r){ b.set(d("hist", yearOf(m)), { [id]: { m, r: r || null }, _k: id }, { mergeFields: [new F.FieldPath(id), "_k"] }); }
+  function histIf(b, id, r){ const m = rawM(id); if (m && m.archived) histPut(b, id, m, r); }
+  // --- oyuncu belgesi ve dizin girişi birlikte yazılır (kurallar ikisinin aynı olmasını şart koşar)
+  function dirPut(b, no, e){ b.set(d("dir", "d" + no.slice(-1)), { [no]: e, _k: no }, { mergeFields: [new F.FieldPath(no), "_k"] }); }
+  async function playerWrite(no, patch){
+    const cur = await F.getDoc(d("players", no)); if (!cur.exists()) throw new Error("Oyuncu bulunamadı.");
+    if (typeof patch.banUntil === "number") patch = { ...patch, banUntil: F.Timestamp.fromMillis(patch.banUntil) };
+    const x = { ...cur.data(), ...patch };
+    const e = { n: x.name, p: x.pos, b: !!x.banned, u: x.uid, c: x.createdAt }; if (x.banUntil != null) e.x = x.banUntil;
+    // kendi mevkisini değiştiren oyuncu sayaçla yazar; admin işlemleri ve şifre sıfırlama sayaçsız
+    const own = Object.keys(patch).every(k => k === "pos");
+    const fill = b => { b.update(d("players", no), patch); dirPut(b, no, e); };
+    if (own) await withAct(no, fill); else { const b = F.writeBatch(db); fill(b); await b.commit(); }
+  }
+  // Oyuncunun kendi işlemi: işlem + sayaç (act/<no>) aynı toplu yazımda gider; kural ikisini birlikte ister
+  let locksOn = false;
+  const actRow = x => { const a = x.data(); return { id: x.id, w: a.w && a.w.toMillis ? a.w.toMillis() : 0, n: a.n | 0, l: !!a.l }; };
+  const myNo = () => auth.currentUser ? noFromEmail(auth.currentUser.email) : null;
+  async function withAct(no, fill){
+    if (no !== myNo()) { const b = F.writeBatch(db); fill(b); return b.commit(); }
+    const snap = await F.getDoc(d("act", no)), r = snap.exists() ? snap.data() : null;
+    const ts = F.serverTimestamp(), fresh = { w: ts, n: 1, l: false, t: ts };
+    const w0 = r && r.w && r.w.toMillis ? r.w.toMillis() : 0, now = Date.now();
+    const cont = r && !r.l ? { w: r.w, n: (r.n | 0) + 1, l: (r.n | 0) + 1 >= ACT_MAX, t: ts } : null;
+    if (r && r.l && now < w0 + ACT_LOCK - 60000) throw Object.assign(new Error(), { code: "permission-denied", locked: true });
+    const first = !r ? fresh : (cont && now < w0 + ACT_WIN ? cont : fresh), second = first === fresh ? cont : fresh;
+    const go = v => { const b = F.writeBatch(db); fill(b); if (!r) b.set(d("act", no), v); else b.update(d("act", no), v); return b.commit(); };
+    // telefon saati sunucudan biraz farklıysa pencere sınırında bir kez öbür seçenekle dene
+    try { await go(first); } catch(e){ if (second && String(e.code || "").includes("permission")) await go(second); else throw e; }
+  }
+  const quota = e => { if (e && String(e.code || "").includes("resource-exhausted")) quotaHit = true; };
+
+  async function session(u){
+    const no = noFromEmail(u.email);
+    const p = await F.getDoc(d("players", no)).catch(() => null);
+    if (p && p.exists() && p.data().uid === u.uid) return { uid: u.uid, no, master: false };
+    // oyuncu kaydı yok: ana admin hesabı mı? (sunucu kuralı UID'ye bakar)
+    try { await F.setDoc(d("admins", u.uid), { no: "", name: MASTER_NAME, master: true }, { merge: true }); return { uid: u.uid, no: null, master: true }; }
+    catch(e){ return { uid: u.uid, no, orphan: true }; }
+  }
+  const authErr = e => {
+    const c = e && e.code || "";
+    if (c.includes("too-many-requests")) return "Çok fazla deneme yapıldı. Birkaç dakika sonra tekrar dene. Okul internetindeysen mobil veriyle dene.";
+    if (c.includes("resource-exhausted") || c.includes("quota")) return QUOTA;
+    if (c.includes("network") || c.includes("unavailable")) return OFFLINE;
+    return null;
+  };
+  async function withNewAccount(no, pin, steps){
+    const email = `${no}.${Date.now().toString(36)}@${DOMAIN}`;
+    busyAuth = true;
+    let cred = null;
+    try {
+      cred = await A.createUserWithEmailAndPassword(auth, email, pinToPassword(no, pin));
+      await steps(cred.user.uid, email);
+    } catch(e){
+      busyAuth = false;
+      if (cred) { try { await cred.user.delete(); } catch(_){} }
+      throw e;
+    }
+    busyAuth = false;
+    authCb && authCb(await session(auth.currentUser));
+  }
+
+  return {
+    onAuth(cb){ authCb = cb; A.onAuthStateChanged(auth, async u => { if (busyAuth) return; cb(u ? await session(u) : null); }); },
+    async login(no, pin){
+      let L; try { L = await F.getDoc(d("logins", no)); } catch(e){ throw new Error(authErr(e) || OFFLINE); }
+      const email = L.exists() ? L.data().email : `${no}@${DOMAIN}`;
+      try { await A.signInWithEmailAndPassword(auth, email, pinToPassword(no, pin)); }
+      catch(e){ throw new Error(authErr(e) || (L.exists() ? "Şifre yanlış." : "Bu numarayla kayıt yok. Önce kayıt ol.")); }
+    },
+    async register({ no, name, pos, pin }){
+      let L; try { L = await F.getDoc(d("logins", no)); } catch(e){ throw new Error(authErr(e) || OFFLINE); }
+      if (L.exists()) throw new Error("Bu numara zaten kayıtlı. Giriş yap.");
+      try {
+        await withNewAccount(no, pin, async (uid, email) => {
+          await F.setDoc(d("logins", no), { email, uid });
+          const b = F.writeBatch(db), ts = F.serverTimestamp();
+          b.set(d("players", no), { name, pos, uid, banned: false, createdAt: ts });
+          dirPut(b, no, { n: name, p: pos, b: false, u: uid, c: ts });
+          await b.commit();
+        });
+      } catch(e){ throw new Error(authErr(e) || "Kayıt tamamlanamadı, tekrar dene."); }
+    },
+    async recover({ no, code, pin }){
+      let L; try { L = await F.getDoc(d("logins", no)); } catch(e){ throw new Error(authErr(e) || OFFLINE); }
+      if (!L.exists()) throw new Error("Bu numarayla kayıt yok.");
+      try {
+        await withNewAccount(no, pin, async (uid, email) => {
+          await F.setDoc(d("claims", no), { code, uid, at: F.serverTimestamp() });
+          await F.updateDoc(d("logins", no), { email, uid });
+          await playerWrite(no, { uid });
+        });
+      } catch(e){ throw new Error(authErr(e) || "Kod yanlış, kullanılmış ya da süresi dolmuş. Adminden yeni kod iste."); }
+    },
+    async logout(){ locksOn = false; unsubs.concat(actUnsubs).forEach(u => u()); unsubs = []; actUnsubs = []; actKey = null; live = { m: {}, r: {} }; hist = {}; got = { m: false, h: false, r: false }; await A.signOut(auth); },
+    markPw: () => F.setDoc(d("admins", auth.currentUser.uid), { pwOk: true }, { merge: true }),
+    async changePin(oldPin, newPin){
+      const u = auth.currentUser, no = noFromEmail(u.email);
+      try { await A.reauthenticateWithCredential(u, A.EmailAuthProvider.credential(u.email, pinToPassword(no, oldPin))); }
+      catch(e){ throw new Error(authErr(e) || "Mevcut şifre yanlış."); }
+      await A.updatePassword(u, pinToPassword(no, newPin));
+    },
+    subscribe(cb){
+      cbRef = cb;
+      const on = (ref, kind, fn) => unsubs.push(F.onSnapshot(ref, fn, e => { cb(kind + ":error"); quota(e); }));
+      // Oyuncu listesi: 2000 oyuncu bile 10 belgede (dir/d0..d9) → açılışta 10 okuma
+      on(col("dir"), "players", s => {
+        const out = [];
+        s.docs.forEach(x => { const sh = x.id.slice(1), data = x.data({ serverTimestamps: "estimate" });
+          for (const [no, e] of Object.entries(data)) if (/^[0-9]{8}$/.test(no) && no.endsWith(sh) && e && typeof e === "object")
+            out.push({ id: no, name: e.n, pos: e.p, banned: e.b, uid: e.u, createdAt: e.c && e.c.toMillis ? e.c.toMillis() : 0, banUntil: e.x && e.x.toMillis ? e.x.toMillis() : 0 }); });
+        cb("players", out);
+      });
+      on(col("admins"), "admins", s => cb("admins", rows(s)));
+      // kendi kilit sayacı (1 okuma); adminler ayrıca kilitli hesapları görür
+      const me = myNo();
+      if (me && /^[0-9]{8}$/.test(me)) unsubs.push(F.onSnapshot(d("act", me), x => cb("act", x.exists() ? actRow(x) : null), () => {}));
+      // Sadece bu haftanın maçları canlı okunur; geçmiş maçlar yıllık özet belgelerinden (hist/y2026...) gelir
+      on(F.query(col("matches"), F.where("archived", "==", false)), "matches", s => { live.m = {}; s.docs.forEach(x => live.m[x.id] = x.data({ serverTimestamps: "estimate" })); got.m = true; emitMR(); });
+      on(col("hist"), "matches", s => { hist = {}; s.docs.forEach(x => { for (const [k, e] of Object.entries(x.data())) if (k !== "_k" && e && e.m) hist[k] = e; }); got.h = true; emitMR(); });
+    },
+    // sadece adminler: kilitli hesaplar (yalnızca kilitli olanlar okunur)
+    watchLocks(){
+      if (locksOn) return; locksOn = true;
+      unsubs.push(F.onSnapshot(F.query(col("act"), F.where("l", "==", true)), x => cbRef("locks", x.docs.map(actRow)), () => { locksOn = false; cbRef("locks", []); }));
+    },
+    // Sadece aktif maçların kayıtları ve oyları okunur (ücretsiz okuma kotasını korumak için)
+    setActive(ids){
+      const key = ids.slice().sort().join(",");
+      if (key === actKey) return; actKey = key;
+      actUnsubs.forEach(u => u()); actUnsubs = [];
+      live.r = {}; got.r = !ids.length;
+      if (!ids.length){ cbRef("signups", []); cbRef("ballots", []); emitMR(); return; }
+      for (const kind of ["signups", "ballots"]){
+        const q = F.query(col(kind), F.where("matchId", "in", ids.slice(0, 10)));
+        actUnsubs.push(F.onSnapshot(q, s => cbRef(kind, rows(s)), e => { cbRef(kind + ":error"); quota(e); }));
+      }
+      const rq = F.query(col("results"), F.where(F.documentId(), "in", ids.slice(0, 10)));
+      actUnsubs.push(F.onSnapshot(rq, s => { live.r = {}; s.docs.forEach(x => live.r[x.id] = x.data()); got.r = true; emitMR(); }, e => { cbRef("results:error"); quota(e); }));
+    },
+    signup: (mid, no, status, pos) => withAct(no, b => b.set(d("signups", mid + "_" + no), { matchId: mid, who: no, status, pos, at: F.serverTimestamp() })),
+    signupPos: (mid, who, pos) => withAct(who, b => b.update(d("signups", mid + "_" + who), { pos })),
+    deleteSignup: (mid, who) => withAct(who, b => b.delete(d("signups", mid + "_" + who))),
+    unlock: no => F.setDoc(d("act", no), { w: F.Timestamp.fromMillis(0), n: 0, l: false, t: F.Timestamp.fromMillis(0) }),
+    addGuest: (mid, name, pos) => { const who = "g-" + Date.now().toString(36); return F.setDoc(d("signups", mid + "_" + who), { matchId: mid, who, guest: true, name, status: "in", pos, at: F.serverTimestamp() }); },
+    createMatch: m => F.setDoc(d("matches", m.id), tsIn(m)),
+    updateMatch: (mid, p) => F.updateDoc(d("matches", mid), tsIn(p)),
+    async deleteMatch(mid, whos){ const b = F.writeBatch(db); whos.forEach(w => b.delete(d("signups", mid + "_" + w))); b.delete(d("matches", mid)); await b.commit(); },
+    async archive(items){
+      const b = F.writeBatch(db);
+      items.forEach(it => {
+        b.update(d("matches", it.id), { archived: true, open: false });
+        if (it.result) b.update(d("results", it.id), it.result);
+        const m = rawM(it.id), r = rawR(it.id);
+        if (m) histPut(b, it.id, { ...m, archived: true, open: false }, r ? { ...r, ...(it.result || {}) } : null);
+      });
+      await b.commit();
+    },
+    castBallot: (mid, voter, pick, pickKey, pickName) => withAct(voter, b => b.set(d("ballots", mid + "_" + voter), { matchId: mid, voter, pick, pickKey, pickName, at: F.serverTimestamp() })),
+    async saveResult(r){ const b = F.writeBatch(db); b.set(d("results", r.matchId), r); histIf(b, r.matchId, r); await b.commit(); },
+    async patchResult(id, p){ const b = F.writeBatch(db); b.update(d("results", id), p); histIf(b, id, { ...(rawR(id) || {}), ...p }); await b.commit(); },
+    async deleteResult(id){ const b = F.writeBatch(db); b.delete(d("results", id)); histIf(b, id, null); await b.commit(); },
+    updatePlayer: (no, p) => playerWrite(no, p),
+    deletePlayer: async no => { const b = F.writeBatch(db); b.delete(d("players", no)); b.set(d("dir", "d" + no.slice(-1)), { [no]: F.deleteField(), _k: no }, { merge: true }); await b.commit(); await F.deleteDoc(d("logins", no)).catch(() => {}); },
+    async issueReset(no, code, until){ const b = F.writeBatch(db); b.set(d("resets", no), { code, until: F.Timestamp.fromMillis(until) }); b.delete(d("claims", no)); await b.commit(); },
+    addAdmin: (uid, no) => F.setDoc(d("admins", uid), { no, master: false }),
+    removeAdmin: uid => F.deleteDoc(d("admins", uid)),
+  };
+}
+
+/* =========================================================
+   VERİ KATMANI — DEMO (sahte veri, sadece bu tarayıcıda)
+   ========================================================= */
+
+
+/* =========================================================
+   UYGULAMA
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const POS = { FV: "Forvet", OS: "Orta saha", DF: "Defans", KL: "Kaleci" };
+/* ---------- arama: büyük/küçük harf, Türkçe/İngilizce harf farkı gözetmez ---------- */
+const FOLD = { "ı":"i", "ş":"s", "ğ":"g", "ü":"u", "ö":"o", "ç":"c", "â":"a", "î":"i", "û":"u" };
+const fold = t => String(t || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[ışğüöçâîû]/g, c => FOLD[c]).replace(/\s+/g, " ").trim();
+const srch = { oyuncular: "", istatistik: "", veriler: "", maclar: "" };
+const sKey = (name, no) => fold(name) + (isAdmin() && no ? " " + no : "");
+const sHit = (key, q) => { const w = fold(q).split(" ").filter(Boolean); return !w.length || w.every(x => key.includes(x)); };
+
+const sBox = (k, ph) => `<label class="srch">${ICON.search}<input type="search" data-srch="${k}" value="${esc(srch[k])}" placeholder="${ph}" autocomplete="off" enterkeyhint="search"></label>`;
+// Uzun listeler: arama hepsini tarar ama ekrana ilk 50 satır çizilir (2000 oyuncuda bile hızlı açılır)
+const PAGE = 50, lists = {}, lim = {};
+const sFilt = k => (lists[k] || []).filter(it => sHit(it.key, srch[k]));
+const sRows = k => sFilt(k).slice(0, lim[k] || PAGE).map(it => it.row()).join("");
+function sFoot(k){
+  const n = sFilt(k).length, shown = Math.min(n, lim[k] || PAGE);
+  if (!n) return `<p class="hint">Sonuç yok.</p>`;
+  return n > shown ? `<button class="btn more" data-act="more" data-k="${k}">Daha fazla göster (${n - shown} ${k === "maclar" ? "maç" : "kişi"} daha)</button>` : "";
+}
+const sList = (k, items) => { lists[k] = items; return ""; };
+function applySearch(k, keep){
+  if (!keep) lim[k] = PAGE;
+  const a = document.getElementById("sl-" + k), f = document.getElementById("sf-" + k);
+  if (a) a.innerHTML = sRows(k); if (f) f.innerHTML = sFoot(k);
+}
+
+const LOGO = `<svg viewBox="0 0 362 112" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FARK"><defs><linearGradient id="fkLg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4677a3"/><stop offset=".55" stop-color="#2b5679"/><stop offset="1" stop-color="#1c3d5a"/></linearGradient></defs><path fill="url(#fkLg)" d="M324.63,111.99C320.56,111.78 315.98,110.74 313.33,109.42C312.74,109.12 311.76,108.67 311.17,108.42C307.02,106.70 301.94,102.85 295.68,96.67C294.71,95.70 293.66,94.56 293.34,94.12C293.03,93.69 292.72,93.33 292.66,93.33C292.51,93.33 289.95,90.42 288.75,88.89C285.82,85.15 284.18,83.01 283.67,82.25C283.35,81.77 282.52,80.65 281.83,79.77C280.49,78.04 279.69,76.93 278.74,75.54C278.41,75.06 277.87,74.34 277.53,73.94C277.19,73.53 276.45,72.54 275.88,71.73C275.31,70.92 274.32,69.54 273.67,68.67C273.03,67.80 272.12,66.52 271.64,65.83C271.17,65.15 270.47,64.21 270.10,63.76C269.72,63.31 269.12,62.50 268.75,61.97C268.38,61.43 267.18,59.74 266.08,58.22C263.30,54.36 262.63,53.43 261.64,52.00C261.17,51.31 260.33,50.16 259.78,49.45C258.90,48.31 258.77,48.03 258.70,47.27C258.63,46.44 258.67,46.33 259.49,45.16C260.57,43.60 261.80,41.92 263.08,40.21C265.27,37.32 267.30,34.52 268.18,33.17C268.69,32.39 269.59,31.14 270.18,30.40C270.77,29.66 271.62,28.51 272.08,27.85C273.49,25.84 274.37,24.63 275.52,23.16C276.12,22.39 276.83,21.41 277.08,21.00C277.34,20.59 277.77,19.99 278.04,19.67C278.30,19.35 278.87,18.56 279.29,17.92C279.71,17.27 280.33,16.41 280.67,16.00C281.32,15.20 281.92,14.36 283.25,12.42C283.71,11.75 284.53,10.62 285.08,9.89C286.40,8.17 286.83,7.29 286.83,6.35C286.83,4.88 285.90,3.81 284.45,3.59C282.54,3.29 282.03,2.33 283.55,1.85C284.22,1.64 307.98,1.51 308.11,1.71C308.16,1.79 308.31,1.81 308.44,1.76C308.58,1.71 308.64,1.74 308.58,1.84C308.53,1.93 308.56,2.00 308.67,2.00C308.77,2.00 308.81,2.07 308.75,2.17C308.69,2.26 308.74,2.33 308.85,2.33C308.96,2.33 309.01,2.38 308.95,2.44C308.90,2.49 308.96,2.65 309.10,2.79C309.49,3.18 309.20,3.33 307.58,3.59C303.28,4.28 299.75,6.41 296.92,10.01C294.57,13.00 291.07,17.34 290.09,18.50C288.42,20.46 287.58,21.49 286.60,22.78C286.10,23.43 285.18,24.56 284.55,25.29C283.93,26.02 282.93,27.25 282.33,28.01C281.74,28.78 280.80,29.94 280.24,30.58C278.96,32.07 278.33,32.99 278.33,33.40C278.33,33.79 279.59,35.77 279.92,35.90C280.05,35.95 280.34,36.37 280.57,36.84C280.93,37.58 282.13,39.30 284.41,42.33C285.49,43.76 288.00,47.24 288.92,48.59C289.38,49.26 290.55,50.87 291.51,52.17C294.69,56.48 296.57,59.06 298.08,61.17C298.89,62.31 300.20,64.11 300.98,65.17C302.95,67.84 304.15,69.47 304.83,70.41C306.47,72.67 307.73,74.34 309.08,76.10C309.91,77.16 310.77,78.28 311.00,78.58C311.86,79.72 314.26,82.63 315.26,83.75C315.84,84.39 317.00,85.70 317.86,86.66C319.77,88.80 323.39,92.35 324.78,93.44C325.34,93.89 326.17,94.54 326.61,94.88C328.21,96.14 331.22,98.03 333.25,99.04C336.45,100.64 342.16,102.26 346.05,102.68C347.58,102.84 348.39,103.13 348.56,103.59C348.77,104.13 348.66,104.65 348.24,105.15C347.79,105.68 343.49,108.05 342.58,108.26C342.31,108.33 341.37,108.70 340.50,109.08C337.10,110.59 332.82,111.67 329.28,111.91C328.37,111.97 327.55,112.04 327.44,112.07C327.34,112.09 326.07,112.06 324.63,111.99ZM6.92,86.48C5.91,86.41 4.89,86.32 4.65,86.28C4.21,86.22 3.12,85.67 3.03,85.47C3.00,85.40 2.87,85.39 2.74,85.44C2.59,85.50 2.50,85.43 2.50,85.27C2.50,85.12 2.37,84.99 2.21,84.99C1.96,84.98 1.96,84.96 2.25,84.83C2.43,84.75 2.49,84.68 2.38,84.68C1.82,84.65 2.26,84.37 3.01,84.28C5.41,84.00 7.88,81.82 8.62,79.34C8.94,78.29 8.94,70.42 8.67,31.91C8.51,9.59 8.56,10.74 7.62,9.13C6.31,6.90 4.24,5.56 1.78,5.35C0.78,5.26 0.41,5.16 0.24,4.93C-0.03,4.56 0.16,4.11 0.71,3.81C1.15,3.57 1.38,3.56 32.40,3.33C50.43,3.19 55.09,3.11 56.65,2.91C59.27,2.57 62.96,1.89 63.83,1.58C64.87,1.22 65.42,1.26 65.80,1.75C66.11,2.14 66.13,2.56 66.24,8.96C66.30,12.69 66.38,17.59 66.42,19.83C66.49,24.10 66.40,24.93 65.81,25.52C65.51,25.82 65.44,25.83 65.11,25.62C64.60,25.28 64.35,24.45 64.34,23.00C64.33,21.45 63.68,18.67 63.01,17.33C61.73,14.76 59.26,12.40 56.54,11.18C53.82,9.95 53.61,9.93 43.42,9.97C34.93,10.00 34.39,10.02 34.00,10.31C33.58,10.62 33.58,10.62 33.57,19.43C33.57,24.28 33.59,31.17 33.63,34.74C33.70,41.22 33.70,41.22 34.09,41.61C34.48,42.00 34.48,42.00 40.78,42.00C46.96,42.00 47.12,41.99 48.83,41.58C51.25,40.99 52.64,40.28 54.30,38.77C56.51,36.77 57.75,34.55 58.26,31.69C58.78,28.77 59.10,28.32 59.86,29.47C60.28,30.12 60.28,30.12 60.41,42.77C60.60,61.82 60.61,60.59 60.33,60.51C60.19,60.47 59.92,60.44 59.72,60.43C59.52,60.42 59.39,60.39 59.42,60.35C59.46,60.32 59.31,60.06 59.10,59.77C58.88,59.48 58.47,58.61 58.17,57.83C56.66,53.87 54.85,51.65 51.88,50.12C49.32,48.80 49.25,48.79 42.09,48.71C35.51,48.64 34.50,48.69 34.09,49.11C33.80,49.39 33.76,58.98 33.99,71.92C34.12,79.35 34.15,79.56 35.31,81.10C36.67,82.90 38.42,83.87 40.82,84.17C42.21,84.34 42.89,84.82 42.72,85.49C42.52,86.25 42.75,86.24 26.83,86.48C14.09,86.68 9.62,86.68 6.92,86.48ZM53.76,85.69C53.48,85.54 53.16,85.32 53.04,85.21C52.91,85.09 52.74,85.00 52.65,85.00C52.42,85.00 52.47,84.72 52.74,84.45C52.88,84.32 52.95,84.17 52.90,84.12C52.79,84.02 53.78,83.67 54.19,83.67C54.76,83.67 57.40,82.67 58.29,82.12C60.37,80.83 62.36,78.19 63.43,75.28C63.64,74.71 64.72,72.30 65.84,69.92C66.95,67.53 68.11,64.98 68.41,64.25C69.11,62.56 69.53,61.60 70.37,59.83C70.75,59.05 71.42,57.59 71.88,56.58C73.50,52.98 74.88,49.90 75.41,48.67C75.71,47.98 76.23,46.87 76.56,46.21C76.89,45.55 77.17,44.92 77.17,44.82C77.17,44.71 77.39,44.17 77.65,43.60C78.58,41.67 80.38,37.75 80.84,36.67C81.09,36.07 81.86,34.38 82.54,32.92C83.23,31.45 84.15,29.43 84.59,28.42C85.99,25.19 88.83,18.96 89.53,17.60C89.90,16.88 90.37,15.83 90.59,15.27C90.80,14.71 91.26,13.61 91.59,12.83C92.27,11.27 94.45,5.86 95.09,4.17C95.31,3.57 95.57,2.65 95.66,2.11C95.84,1.06 96.31,0.25 96.85,0.08C97.51,-0.13 97.94,0.43 99.42,3.45C100.21,5.08 102.13,8.97 103.67,12.08C105.21,15.20 107.57,20.00 108.92,22.75C110.27,25.50 113.08,31.20 115.17,35.42C118.60,42.33 121.64,48.50 126.54,58.50C135.75,77.29 135.94,77.66 137.03,79.01C138.43,80.75 140.07,81.94 141.45,82.24C142.23,82.41 142.99,81.98 144.23,80.67C146.06,78.72 146.42,77.07 146.26,71.25C146.21,69.33 146.13,57.33 146.08,44.58C145.98,17.99 145.89,10.67 145.66,9.46C145.14,6.72 142.25,4.26 139.15,3.90C138.22,3.79 138.22,3.79 138.19,3.07C138.18,2.68 138.25,2.30 138.35,2.24C138.45,2.18 142.97,2.10 148.39,2.07C153.81,2.04 164.17,1.97 171.42,1.92C187.86,1.79 190.20,1.92 196.33,3.26C199.42,3.93 200.62,4.33 203.20,5.56C207.25,7.47 209.13,9.04 211.74,12.67C214.35,16.29 215.48,23.23 214.42,29.17C212.88,37.83 207.75,43.95 200.25,46.08C198.56,46.56 198.53,46.93 200.11,47.74C204.20,49.84 208.40,54.30 212.00,60.40C214.02,63.82 215.89,66.78 218.38,70.50C222.16,76.14 226.44,80.71 227.93,80.71C228.72,80.71 229.71,79.37 230.17,77.66C230.55,76.25 230.22,11.43 229.82,9.49C229.23,6.64 226.22,4.01 223.54,4.00C222.51,4.00 222.98,3.18 224.38,2.51C225.42,2.02 225.42,2.02 243.16,1.97L260.90,1.92 L261.46,2.65C261.76,3.05 261.99,3.46 261.95,3.56C261.92,3.67 261.44,3.80 260.88,3.86C258.80,4.10 256.92,5.52 255.77,7.75C255.08,9.08 255.08,9.08 255.08,20.92C255.08,41.22 255.34,74.35 255.51,75.87C255.70,77.64 256.12,78.81 256.96,79.92C257.71,80.91 259.91,82.44 260.79,82.59C261.76,82.75 262.11,82.98 262.43,83.69C262.71,84.32 262.71,84.35 262.40,84.63C262.12,84.89 261.63,84.93 258.50,84.98C256.53,85.01 254.87,85.06 254.82,85.09C254.54,85.26 222.04,85.20 221.72,85.03C221.50,84.91 219.80,84.81 217.14,84.75C211.17,84.62 206.57,84.18 203.09,83.39C201.01,82.91 197.54,81.67 196.64,81.08C196.31,80.87 195.77,80.57 195.44,80.44C193.97,79.82 190.85,77.12 189.27,75.08C185.46,70.18 183.83,66.51 181.91,58.50C181.39,56.35 180.79,53.91 180.58,53.08C179.63,49.41 178.24,46.87 176.60,45.83C175.65,45.24 175.43,44.89 175.27,43.79C175.15,42.89 175.40,42.74 177.15,42.61C180.38,42.38 183.20,40.90 185.06,38.44C186.15,37.01 187.43,34.51 187.74,33.20C188.70,29.17 188.95,26.41 188.67,23.05C188.19,17.21 186.76,13.88 183.68,11.38C181.21,9.39 179.42,8.84 174.90,8.72C171.74,8.63 171.70,8.63 171.33,9.00C170.95,9.39 170.95,9.39 171.06,31.40C171.29,77.02 171.29,76.88 172.00,78.45C172.64,79.87 174.08,81.35 175.46,82.03C176.04,82.32 176.61,82.68 176.72,82.84C176.83,82.99 177.10,83.18 177.33,83.26C177.86,83.44 179.17,83.46 179.17,83.29C179.17,83.04 179.51,83.17 179.62,83.46C179.68,83.62 179.78,83.79 179.84,83.83C180.08,84.00 179.66,84.68 179.21,84.85C178.96,84.94 178.08,85.01 177.25,85.00C175.46,84.96 158.54,85.12 148.83,85.27C145.03,85.32 140.49,85.39 138.75,85.41C137.01,85.44 128.50,85.51 119.83,85.57C104.55,85.69 104.07,85.68 103.69,85.38C102.82,84.67 103.19,83.40 104.39,83.01C105.24,82.73 106.78,81.11 107.02,80.26C107.12,79.90 107.15,79.28 107.09,78.89C106.91,77.73 105.55,73.92 104.75,72.32C104.52,71.88 103.92,70.48 103.40,69.22C102.89,67.95 102.33,66.77 102.15,66.58C101.83,66.26 101.60,66.25 90.12,66.25C79.54,66.25 78.37,66.28 77.91,66.53C77.25,66.89 77.53,66.30 74.10,74.50C73.10,76.90 72.39,79.39 72.55,80.01C72.61,80.24 72.95,80.89 73.32,81.46C74.05,82.59 75.03,83.23 76.36,83.44C77.16,83.57 78.00,84.30 78.00,84.86C78.00,85.21 77.60,85.71 77.45,85.56C77.40,85.51 77.19,85.56 76.99,85.67C76.71,85.82 73.74,85.89 65.43,85.92C55.28,85.96 54.20,85.94 53.76,85.69ZM98.39,59.09C98.83,58.89 98.69,57.87 98.04,56.40C96.71,53.42 95.69,51.05 95.58,50.67C95.51,50.44 95.25,49.83 94.99,49.32C94.73,48.80 94.13,47.42 93.66,46.23C91.31,40.34 90.29,38.15 89.94,38.20C89.60,38.25 89.07,39.36 86.80,44.67C86.43,45.54 85.87,46.85 85.55,47.58C85.23,48.32 84.38,50.35 83.66,52.11C82.94,53.87 82.13,55.72 81.86,56.22C81.59,56.73 81.28,57.52 81.17,57.99C80.89,59.14 81.05,59.31 82.47,59.37C84.64,59.46 98.09,59.23 98.39,59.09Z"/><g transform="translate(319.5,22.5) scale(.43)"><polygon points="50.0,4.0 56.8,29.1 77.0,12.8 67.8,37.1 93.7,35.8 72.0,50.0 93.7,64.2 67.8,62.9 77.0,87.2 56.8,70.9 50.0,96.0 43.2,70.9 23.0,87.2 32.2,62.9 6.3,64.2 28.0,50.0 6.3,35.8 32.2,37.1 23.0,12.8 43.2,29.1" fill="none" stroke="#9a9478" stroke-width="5.5"/></g></svg>`;
+const validPos = a => [...new Set((Array.isArray(a) ? a : []).filter(k => k in POS))].slice(0, 3);
+const ICON = {
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  nav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  ball: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg>',
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  ppl: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c1.8.7 3 2.4 3.5 5.4"/></svg>',
+  bar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
+  wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.2 1.1 2.2 1.4 2.5 1.6.3.1.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l1.8.9c.3.1.4.2.5.3.1.2.1.7-.1 1.3z"/></svg>'
+};
+
+let api, sess = null, authPhase = "loading";
+let matches = [], signups = [], results = [], players = {}, admins = [], ballots = [];
+let loaded = new Set();
+let busy = false, confirmKey = null, statSort = "g", rowMenu = null, selMid = null;
+let lineupEdit = null, posOpen = false, admPos = null, resetShown = null;
+let formFor = null, form = {}, gName = "", gPos = [], draft = null;
+let fv2 = {};  // giriş/kayıt/şifre formlarında yazılanlar (ekran yenilenince kaybolmasın)
+let eggOpen = false, eggTaps = 0, eggT = 0;
+let authMode = "login", authErr = "", regPos = [], myPosEdit = null, renameVal = "", addAdminNo = "";
+
+const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2800); };
+const me = () => sess && sess.no ? players[sess.no] : null;
+const masterPwOk = () => { const a = admins.find(x => x.master); return !!(a && a.pwOk); };
+const masterName = () => { const a = admins.find(x => x.master); return (a && a.name) || MASTER_NAME; };
+const isAdmin = () => !!(sess && (sess.master || admins.some(a => a.id === sess.uid)));
+const pName = no => (players[no] && players[no].name) || "Silinmiş oyuncu";
+const vName = v => v.guest ? (v.name || "Misafir") : pName(v.id);
+const vKey = v => v.guest ? "n:" + String(v.name || "").trim().toLocaleLowerCase("tr") : v.id;
+const rName = p => p.no ? (players[p.no] ? players[p.no].name : (p.name || "Oyuncu")) : (p.name || "Misafir");
+
+/* ---------- gelen veriyi temizle (bozuk/kötü niyetli kayıtlara karşı) ---------- */
+const str = (v, n = 80) => typeof v === "string" ? v.slice(0, n) : (v == null ? "" : String(v).slice(0, n));
+const num = (v, lo = 0, hi = 99) => { const x = Math.floor(Number(v)); return Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : lo; };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^\d{2}:\d{2}$/;
+const TEAM_A = "Turkuaz", TEAM_B = "Beyaz";   // admin maç bazında değiştirmezse varsayılan takım adları
+const tName = (o, t) => t === "A" ? ((o && o.teamA) || TEAM_A) : t === "B" ? ((o && o.teamB) || TEAM_B) : "Takımsız";
+const strList = (a, n = 60) => (Array.isArray(a) ? a : []).filter(x => typeof x === "string" && x.length <= 40).slice(0, n);
+const cleanMatch = m => ({ id: str(m.id, 40), label: str(m.label, 24) || "Maç", date: DATE_RE.test(m.date) ? m.date : "", time: TIME_RE.test(m.time) ? m.time : "",
+  place: str(m.place, 60), loc: str(m.loc, 300), capacity: num(m.capacity, 4, 30) & ~1, duration: num(m.duration, 30, 180), open: m.open !== false, archived: !!m.archived,
+  teamSeed: str(m.teamSeed, 40), startAt: Number(m.startAt) || 0, voteFrom: Number(m.voteFrom) || 0, voteUntil: Number(m.voteUntil) || 0, createdAt: Number(m.createdAt) || 0,
+  frozen: strList(m.frozen), squad: strList(m.squad), teamA: str(m.teamA, 16).trim(), teamB: str(m.teamB, 16).trim(),
+  lineup: Object.fromEntries(Object.entries(m.lineup && typeof m.lineup === "object" ? m.lineup : {}).filter(([k, v]) => k.length <= 40 && /^[AB]-(KL|DF|OS|FV)$/.test(v)).slice(0, 60)) });
+const cleanSignup = s => ({ sid: str(s.id, 90), id: str(s.who, 40), matchId: str(s.matchId, 40), status: s.status === "out" ? "out" : "in", pos: validPos(s.pos), at: Number(s.at) || 0, guest: !!s.guest, name: str(s.name, 40) });
+const cleanPlayer = p => ({ name: str(p.name, 40) || "Oyuncu", pos: validPos(p.pos), uid: str(p.uid, 128), banned: !!p.banned, banUntil: Number(p.banUntil) || 0, createdAt: Number(p.createdAt) || 0 });
+// Ban durumu: kalıcı ya da süresi dolmamış süreli ban
+const banEnd = p => !p ? 0 : p.banned ? Infinity : (p.banUntil > Date.now() ? p.banUntil : 0);
+const isBanned = p => banEnd(p) > 0;
+let myAct = null, locks = [];
+const lockEnd = a => a && a.l ? (Number(a.w) || 0) + ACT_LOCK : 0;
+const myLockEnd = () => { const e = lockEnd(myAct); return e > Date.now() ? e : 0; };
+const lockOf = no => { const a = locks.find(x => x.id === no), e = lockEnd(a); return e > Date.now() ? e : 0; };
+const fmtEnd = ms => new Date(ms).toLocaleString("tr-TR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+const cleanBallot = b => ({ matchId: str(b.matchId, 40), voter: str(b.voter, 12), pick: str(b.pick, 40), pickKey: str(b.pickKey, 60), pickName: str(b.pickName, 40), at: Number(b.at) || 0 });
+const cleanTally = a => (Array.isArray(a) ? a : []).slice(0, 40).map(x => ({ key: str(x && x.key, 60), name: str(x && x.name, 40), n: num(x && x.n, 0, 999) })).filter(x => x.key);
+const cleanResult = r => ({ matchId: str(r.matchId || r.id, 40), label: str(r.label, 24), date: DATE_RE.test(r.date) ? r.date : "", place: str(r.place, 60), motm: str(r.motm, 60),
+  mvpTally: cleanTally(r.mvpTally), mvpWinner: str(r.mvpWinner, 60), teamA: str(r.teamA, 16).trim(), teamB: str(r.teamB, 16).trim(),
+  players: (Array.isArray(r.players) ? r.players : []).slice(0, 60).map(p => ({ key: str(p.key, 60), no: p.no ? str(p.no, 12) : null, name: str(p.name, 40),
+    team: p.team === "A" || p.team === "B" ? p.team : null, played: !!p.played, goals: num(p.goals), assists: num(p.assists) })) });
+
+/* ---------- tarih / harita ---------- */
+const mDate = m => { if (!m || !m.date) return null; const d = new Date(m.date + "T" + (m.time || "20:00")); return isNaN(d) ? null : d; };
+const dayName = d => d.toLocaleDateString("tr-TR", { weekday: "long" });
+const dateLine = (d, m) => d.toLocaleDateString("tr-TR", { day: "numeric", month: "long" }) + (m.time ? "  ·  " + m.time : "");
+const fmtAt = ms => { const d = new Date(ms); return d.toLocaleDateString("tr-TR", { weekday: "short" }) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const shortDate = s => { const d = new Date(s + "T12:00"); return isNaN(d) ? s : d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" }); };
+const coords = s => { const m = String(s || "").match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/); return m ? m[1] + "," + m[2] : null; };
+function mapLinks(m){
+  const loc = (m.loc || "").trim(), c = coords(loc), isUrl = /^https:\/\//i.test(loc);
+  const q = c || (!isUrl && loc) || m.place || "";
+  if (!q && !isUrl) return null;
+  return { dir: q ? "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(q) : loc,
+           view: isUrl ? loc : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q) };
+}
+function calLink(m){
+  const d = mDate(m); if (!d) return null;
+  const e = new Date(d.getTime() + (Number(m.duration) || 60) * 60000);
+  const f = x => x.getFullYear() + pad(x.getMonth() + 1) + pad(x.getDate()) + "T" + pad(x.getHours()) + pad(x.getMinutes()) + "00";
+  return "https://calendar.google.com/calendar/render?" + new URLSearchParams({ action: "TEMPLATE", text: "Fark Halı Saha · " + m.label, dates: f(d) + "/" + f(e), ctz: "Europe/Istanbul", location: m.place || "", details: "Fark halı saha maçı" });
+}
+
+/* ---------- maç zamanı ve MVP oylaması ---------- */
+// Türkiye saati (UTC+3, yaz saati yok). Oylama maç bitince açılır, başlangıçtan 24 saat sonra kapanır.
+function windowOf(date, time, duration){
+  const t = Date.parse((date || "") + "T" + (time || "20:00") + ":00+03:00");
+  if (!Number.isFinite(t)) return { startAt: 0, voteFrom: 0, voteUntil: 0 };
+  return { startAt: t, voteFrom: t + (Number(duration) || 60) * 60000, voteUntil: t + 24 * 3600000 };
+}
+const mById = id => matches.find(m => m.id === id) || null;
+const voteState = m => { if (!m || !m.voteFrom) return "none"; const n = Date.now(); return n < m.voteFrom ? "before" : n < m.voteUntil ? "open" : "closed"; };
+const fmtWhenMs = ms => { const d = new Date(ms); return d.toLocaleDateString("tr-TR", { weekday: "long" }) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const activeMatches = () => matches.filter(m => !m.archived).sort((a, b) => (a.startAt - b.startAt) || (a.createdAt - b.createdAt));
+const isLive = id => { const m = mById(id); return !!m && !m.archived; };
+function tallyLive(mid){
+  const c = {};
+  ballots.filter(b => b.matchId === mid && b.pickKey && b.pickKey !== b.voter).forEach(b => { const x = c[b.pickKey] ||= { key: b.pickKey, name: b.pickName, n: 0 }; x.n++; });
+  return Object.values(c).sort((a, b) => b.n - a.n);
+}
+const tallyOf = r => isLive(r.matchId) ? tallyLive(r.matchId) : (r.mvpTally || []);
+// Oylamanın kazananı: en çok oy; eşitlikte o maçta daha çok gol atan; o da eşitse karar admine kalır
+function winnerOf(t, playersOfMatch){
+  if (!t.length) return null;
+  const top = t.filter(x => x.n === t[0].n);
+  if (top.length === 1) return top[0].key;
+  const g = k => { const p = (playersOfMatch || []).find(q => q.key === k); return p ? p.goals : 0; };
+  top.sort((a, b) => g(b.key) - g(a.key));
+  return g(top[0].key) > g(top[1].key) ? top[0].key : null;
+}
+const voteOpenFor = id => { const m = mById(id); return !!m && !m.archived && voteState(m) !== "closed"; };
+const effMotm = r => r.motm || (voteOpenFor(r.matchId) ? "" : (isLive(r.matchId) ? (winnerOf(tallyLive(r.matchId), r.players) || "") : (r.mvpWinner || "")));
+
+/* ---------- kadro, yedek, öncelik ----------
+   - Her maçta ilk "Geliyorum" diyenler öne geçer.
+   - Bu haftanın (aktif) DAHA ÖNCEKİ bir maçının as kadrosunda olan kayıtlı oyuncu, bu maçta
+     bu hafta oynamayanların arkasına geçer (öncelik oynamayanlarda).
+   - Admin kaydı kapatınca sıra o andaki haliyle sabitlenir (frozen).
+   - Admin kadroyu elle kurduysa (squad) o geçerlidir; çekilen olursa yerine sıradaki yedek girer.
+   - Misafirler önceliğe dahil değildir; sıraya eklendikleri zamana göre girerler. */
+let _lc = null;   // önbellek: veri dizileri her anlık görüntüde yeniden oluşturulduğu için referans karşılaştırması yeterli
+function lineups(){
+  const no = sess && sess.no;
+  if (_lc && _lc.s === signups && _lc.m === matches && _lc.no === no) return _lc.out;
+  const out = {}, busySet = new Map();
+  for (const m of activeMatches()){
+    const cap = m.capacity || 12;
+    const sg = signups.filter(s => s.matchId === m.id);
+    const ins = sg.filter(s => s.status === "in").sort((a, b) => (a.at - b.at) || a.id.localeCompare(b.id));
+    const isBusy = s => !s.guest && busySet.has(s.id);
+    let order;
+    if (!m.open && m.frozen.length){
+      const ix = new Map(m.frozen.map((id, i) => [id, i]));
+      order = ins.filter(s => ix.has(s.id)).sort((a, b) => ix.get(a.id) - ix.get(b.id)).concat(ins.filter(s => !ix.has(s.id)));
+    } else order = ins.filter(s => !isBusy(s)).concat(ins.filter(isBusy));
+    let kadro, yedek;
+    if (m.squad.length){
+      const sq = new Set(m.squad);
+      kadro = order.filter(s => sq.has(s.id));
+      const rest = order.filter(s => !sq.has(s.id));
+      while (kadro.length < cap && rest.length) kadro.push(rest.shift());
+      yedek = rest;
+    } else { kadro = order.slice(0, cap); yedek = order.slice(cap); }
+    const why = {};
+    yedek.forEach(s => { if (isBusy(s)) why[s.id] = busySet.get(s.id); });
+    kadro.forEach(s => { if (!s.guest && !busySet.has(s.id)) busySet.set(s.id, m.label); });
+    out[m.id] = { m, cap, kadro, yedek, outs: sg.filter(s => s.status === "out"), why, mine: sess && sess.no ? sg.find(s => s.id === sess.no) : null };
+  }
+  _lc = { s: signups, m: matches, no, out };
+  return out;
+}
+const derive = mid => lineups()[mid] || { m: mById(mid), cap: 12, kadro: [], yedek: [], outs: [], why: {}, mine: null };
+
+function teamScore(r){
+  const s = { A: 0, B: 0 }; let has = false;
+  (r.players || []).forEach(p => { if (p.played && (p.team === "A" || p.team === "B")){ has = true; s[p.team] += Number(p.goals) || 0; } });
+  return has ? s : null;
+}
+// Takım bazında: bir takımın toplam asisti, o takımın toplam golünü geçemez
+function assistProblem(rows, names){
+  const g = {}, a = {};
+  rows.filter(r => r.played).forEach(r => { const t = r.team || "?"; g[t] = (g[t] || 0) + (r.goals | 0); a[t] = (a[t] || 0) + (r.assists | 0); });
+  const bad = Object.keys(a).find(t => a[t] > (g[t] || 0));
+  return bad ? (bad === "?" ? "Takımsız oyuncular" : tName(names, bad)) : null;
+}
+let aggCache = null, aggOf = null;
+function aggregate(){
+  if (aggOf === results && aggCache) return aggCache;
+  const agg = {};
+  const rs = results.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  for (const r of rs){
+    const sc = teamScore(r), mv = effMotm(r);
+    for (const p of (r.players || [])){
+      if (!p.played) continue;
+      const a = agg[p.key] ||= { key: p.key, no: p.no || null, name: p.name || "", m: 0, g: 0, a: 0, mvp: 0, w: 0, d: 0, l: 0 };
+      a.m++; a.g += Number(p.goals) || 0; a.a += Number(p.assists) || 0;
+      if (p.name) a.name = p.name;
+      if (mv === p.key) a.mvp++;
+      if (sc && (p.team === "A" || p.team === "B")){ const o = p.team === "A" ? "B" : "A"; if (sc[p.team] > sc[o]) a.w++; else if (sc[p.team] < sc[o]) a.l++; else a.d++; }
+    }
+  }
+  aggOf = results; aggCache = agg;
+  return agg;
+}
+const aName = a => a.no ? (players[a.no] ? players[a.no].name : a.name || "Oyuncu") : (a.name || "Misafir");
+
+/* ---------- takım önerisi ---------- */
+function rng(seed){ let h = 1779033703; for (const c of String(seed)){ h = Math.imul(h ^ c.charCodeAt(0), 3432918353); h = h << 13 | h >>> 19; }
+  return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; }; }
+function formation(n){ const fv = Math.max(1, Math.round(n * 0.2)), df = Math.floor((n - fv) / 2); return { DF: df, OS: n - fv - df, FV: fv }; }
+const emptyTeams = () => [0, 1].map(t => ({ id: t ? "B" : "A", lines: { FV: [], OS: [], DF: [], KL: [] }, tot: 0 }));
+function autoTeams(kadro, size, m, stats){
+  const R = rng(m.teamSeed || m.id);
+  const P = kadro.map(v => { const s = stats[vKey(v)], pp = validPos(v.pos); return { v, pos: pp.length ? pp : ["OS","DF","FV"], r: s && s.m ? (s.g + 0.5 * s.a + 0.5 * s.mvp) / s.m : 0, rnd: R() }; });
+  const gk = [];
+  for (let rank = 0; rank < 3 && gk.length < 2; rank++) for (const p of P){ if (gk.length >= 2) break; if (!gk.includes(p) && p.pos[rank] === "KL"){ p.asg = "KL"; p.rank = rank; gk.push(p); } }
+  if (R() < .5) gk.reverse();
+  const teams = emptyTeams();
+  teams.forEach((t, i) => { t.gk = gk[i] || null; t.slots = formation(size - (gk[i] ? 1 : 0)); });
+  const left = { DF: 0, OS: 0, FV: 0 }; teams.forEach(t => { for (const k in left) left[k] += t.slots[k]; });
+  const rest = P.filter(p => !gk.includes(p));
+  for (let rank = 0; rank < 3; rank++) for (const p of rest){ if (p.asg) continue; const k = p.pos[rank]; if (k && k !== "KL" && left[k] > 0){ p.asg = k; p.rank = rank; left[k]--; } }
+  for (const p of rest){ if (p.asg) continue; const k = ["OS","DF","FV"].find(k => left[k] > 0); p.asg = k; p.rank = -1; left[k]--; }
+  let flip = R() < .5;
+  for (const k of ["FV","OS","DF"]){
+    const grp = rest.filter(p => p.asg === k).sort((a, b) => b.r - a.r || a.rnd - b.rnd);
+    for (const p of grp){
+      const open = teams.filter(t => t.lines[k].length < t.slots[k]);
+      const t = open.length === 1 ? open[0] : (teams[0].tot === teams[1].tot ? teams[flip ? 1 : 0] : (teams[0].tot < teams[1].tot ? teams[0] : teams[1]));
+      flip = !flip; t.lines[k].push(p); t.tot += p.r;
+    }
+  }
+  teams.forEach(t => { if (t.gk) t.lines.KL.push(t.gk); });
+  return teams;
+}
+function buildTeams(kadro, cap, m){
+  const size = Math.floor(cap / 2), lu = m.lineup || {};
+  const manual = kadro.some(v => lu[v.id]);
+  let teams;
+  if (!manual){
+    if (size < 2 || kadro.length < cap) return null;
+    teams = autoTeams(kadro.slice(0, size * 2), size, m, aggregate());
+  } else {
+    teams = emptyTeams();
+    for (const v of kadro){
+      const o = lu[v.id], pp = validPos(v.pos);
+      if (o){ const [tm, ps] = o.split("-"); teams.find(t => t.id === tm).lines[ps].push({ v, asg: ps, rank: pp.indexOf(ps), manual: true }); }
+    }
+    for (const v of kadro){ // admin düzenledikten sonra kadroya girenler: kalabalık olmayan takıma, ilk tercihine
+      if (lu[v.id]) continue;
+      const pp = validPos(v.pos), k = pp[0] || "OS";
+      const t = teams.slice().sort((a, b) => Object.values(a.lines).flat().length - Object.values(b.lines).flat().length)[0];
+      t.lines[k].push({ v, asg: k, rank: 0, manual: false, late: true });
+    }
+  }
+  teams.forEach(t => { t.gk = t.lines.KL[0] || null; });
+  teams.edited = manual;
+  return teams;
+}
+
+/* ---------- küçük parçalar ---------- */
+const posPicker = (arr, who) => `<div class="pp">${Object.keys(POS).map(k => { const i = arr.indexOf(k); return `<button type="button" class="pc ${i >= 0 ? "on" : ""}" data-act="pos" data-who="${who}" data-p="${k}">${i >= 0 ? `<b>${i + 1}</b>` : ""}${POS[k]}</button>`; }).join("")}</div>`;
+const posTag = a => { const p = validPos(a); return p.length ? `<span class="pos">${POS[p[0]]}</span>` : ""; };
+const plink = (no, txt) => no && players[no] ? `<a href="#oyuncu-${esc(no)}">${esc(txt)}</a>` : esc(txt);
+const mTitle = m => { const d = mDate(m); return m.label + (d ? " · " + d.toLocaleDateString("tr-TR", { weekday: "short", day: "numeric", month: "short" }) + " " + m.time : ""); };
+const genCode = () => { const a = new Uint32Array(2); crypto.getRandomValues(a); return String((a[0] % 90000000) + 10000000); };
+
+function route(){
+  const h = location.hash.slice(1) || "hafta";
+  if (h.startsWith("mac-")) return { v: "mac", id: h.slice(4) };
+  if (h.startsWith("oyuncu-")) return { v: "oyuncu", id: h.slice(7) };
+  return { v: ["hafta","maclar","oyuncular","istatistik","yonetim","hesap"].includes(h) ? h : "hafta" };
+}
+function currentMatch(){
+  const act = activeMatches();
+  if (selMid && act.some(m => m.id === selMid)) return mById(selMid);
+  const now = Date.now();
+  const pick = act.find(m => now < (m.voteUntil || m.startAt + 86400000)) || act[act.length - 1] || null;
+  selMid = pick ? pick.id : null;
+  return pick;
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function blockedNotice(){
+  const be = banEnd(players[sess.no]), le = myLockEnd();
+  if (be === Infinity) return `<div class="notice"><b>Hesabın engellendi</b>Adminle iletişime geç.</div>`;
+  if (be) return `<div class="notice"><b>Hesabın engellendi</b>Engelin bitişi: ${esc(fmtEnd(be))}. Adminle iletişime geç.</div>`;
+  return `<div class="notice"><b>Hesabın otomatik olarak engellendi</b>Kısa sürede çok fazla işlem yaptın. Engelin bitişi: ${esc(fmtEnd(le))}. Hata olduğunu düşünüyorsan adminle iletişime geç.</div>`;
+}
+let pending = false, frame = 0;
+function render(force){
+  if (!force){ if (!frame) frame = requestAnimationFrame(() => { frame = 0; draw(false); }); return; }
+  if (frame){ cancelAnimationFrame(frame); frame = 0; }
+  draw(true);
+}
+function draw(force){
+  const ae = document.activeElement;
+  if (!force && ae && /INPUT|SELECT/.test(ae.tagName) && ae.type !== "checkbox"){ pending = true; return; }
+  pending = false;
+  const root = $("#root");
+  if (authPhase === "loading"){ root.innerHTML = `<div class="notice">Yükleniyor…</div>`; return; }
+  if (!sess || sess.orphan){ root.innerHTML = viewAuth(); return; }
+  const r = route(), adm = isAdmin();
+  let body;
+  if (loaded.size < 6) body = `<div class="notice">Yükleniyor…</div>`;
+  else if (sess.no && (isBanned(players[sess.no]) || myLockEnd()) && r.v !== "hesap") body = blockedNotice();
+  else body = r.v === "maclar" ? viewMatches() : r.v === "mac" ? viewMatchDetail(r.id) : r.v === "oyuncular" ? viewPlayers()
+    : r.v === "oyuncu" ? viewPlayer(r.id) : r.v === "istatistik" ? viewStats() : r.v === "yonetim" && adm ? viewAdmin() : r.v === "hesap" ? viewAccount() : viewWeek();
+  const tabs = [["hafta","Bu hafta",ICON.ball],["maclar","Sonuçlar",ICON.list],["oyuncular","Oyuncular",ICON.ppl],["istatistik","İstatistik",ICON.bar]].concat(adm ? [["yonetim","Yönetim",ICON.gear]] : []);
+  const cur = r.v === "mac" ? "maclar" : r.v === "oyuncu" ? "oyuncular" : r.v;
+  const myName = sess.master ? masterName() : (me() ? me().name : "");
+  root.innerHTML = `<div class="wrap">
+      <header class="top">
+        <a class="mark" href="#hafta" aria-label="Fark Halı Saha">${LOGO}<span>HALI SAHA</span></a>
+        <div style="display:flex;align-items:center;gap:10px">${DEMO ? `<span class="demo">DEMO</span>` : ""}
+          <a class="me-btn" href="#hesap"><i>${esc(myName.charAt(0).toUpperCase() || "?")}</i><span>Hesabım</span></a></div>
+      </header>
+      ${quotaHit ? `<div class="notice" style="margin-bottom:12px"><b>Günlük sınır doldu</b>${QUOTA}</div>` : ""}${sess.master && !masterPwOk() && r.v !== "hesap" ? `<div class="notice" style="margin-bottom:12px"><b>Ana admin şifresini değiştir</b>Kurulumdaki ilk şifre henüz değiştirilmedi. <a href="#hesap">Hesabım</a>'dan uzun ve tahmin edilemez bir şifre koy.</div>` : ""}${body}
+    </div>
+    <nav class="nav"><div>${tabs.map(([h, l, ic]) => `<a href="#${h}" class="${cur === h ? "on" : ""}">${ic}${l}</a>`).join("")}</div></nav>`;
+}
+document.addEventListener("focusout", () => setTimeout(() => { if (pending) render(); }, 0));
+
+/* ---------- giriş / kayıt / şifremi unuttum ---------- */
+function viewAuth(){
+  const reg = authMode === "register", rec = authMode === "recover";
+  const pinIn = (id, label, ac) => `<label class="f"><span>${label}</span><input type="password" id="${id}" value="${esc(fv2[id] || "")}" class="pin" inputmode="numeric" maxlength="8" autocomplete="${ac}" placeholder="••••"></label>`;
+  return `<div class="auth">
+    <div class="hero" data-act="egg">${LOGO}<small>HALI SAHA</small></div>
+    <div class="seg"><button data-act="amode" data-m="login" class="${!reg && !rec ? "on" : ""}">Giriş yap</button><button data-act="amode" data-m="register" class="${reg ? "on" : ""}">Kayıt ol</button></div>
+    <form id="authForm" autocomplete="on">
+      ${rec ? `<p class="q" style="font-size:22px">Şifremi unuttum</p><p class="qsub">Adminden aldığın kodu gir.</p>` : ""}
+      <label class="f"><span>Öğrenci numarası</span><input id="aNo" value="${esc(fv2.aNo || "")}" inputmode="numeric" autocomplete="username" maxlength="12" placeholder="8 haneli numaran" required></label>
+      ${reg ? `<label class="f"><span>Ad soyad</span><input type="text" id="aName" value="${esc(fv2.aName || "")}" autocomplete="name" maxlength="40" placeholder="Örn. Ahmet Yılmaz"></label>
+        <label class="f" style="margin-bottom:8px"><span>Hangi mevkilerde oynarsın? En sevdiğinden başlayarak 3 tane seç</span></label>${posPicker(regPos, "reg")}` : ""}
+      ${rec ? `<label class="f"><span>Sıfırlama kodu</span><input id="aCode" value="${esc(fv2.aCode || "")}" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="8 haneli kod" class="pin" style="letter-spacing:4px"></label>` : ""}
+      ${reg || rec ? pinIn("aPin", reg ? "Şifre belirle (4-8 rakam)" : "Yeni şifre (4-8 rakam)", "new-password") + pinIn("aPin2", "Şifre tekrar", "new-password")
+        : `<label class="f"><span>Şifre</span><input type="password" id="aPin" value="${esc(fv2.aPin || "")}" class="pin" ${eggOpen ? 'maxlength="40" style="letter-spacing:2px"' : 'inputmode="numeric" maxlength="8"'} autocomplete="current-password" placeholder="••••" required></label>`}
+      <button class="btn pri full" type="submit" ${busy ? "disabled" : ""}>${busy ? "Bekle…" : reg ? "Kayıt ol" : rec ? "Şifremi yenile" : "Giriş yap"}</button>
+      <p class="err">${esc(authErr)}</p>
+    </form>
+    ${reg ? ""
+      : rec ? `<p class="hint"><a href="#" data-act="amode" data-m="login">‹ Girişe dön</a></p>`
+      : `<p class="hint">Şifreni mi unuttun? Bir admine yaz, sana kod versin. Sonra <a href="#" data-act="amode" data-m="recover">Şifremi unuttum</a>'a dokun.</p>`}
+    ${DEMO ? demoNote() : ""}
+  </div>`;
+}
+
+/* ---------- bu hafta ---------- */
+function matchTabs(act, cur){
+  if (act.length < 2) return "";
+  const L = lineups();
+  return `<div class="mtabs">${act.map(m => { const x = L[m.id], mine = x && x.mine && x.mine.status === "in" ? (x.kadro.some(s => s.id === sess.no) ? " · kadrodasın" : " · yedektesin") : "";
+    const d = mDate(m); return `<button class="mtab ${cur && cur.id === m.id ? "on" : ""}" data-act="selm" data-id="${esc(m.id)}"><b>${esc(m.label)}</b><small>${d ? esc(d.toLocaleDateString("tr-TR", { weekday: "short" }) + " " + m.time) : ""}${esc(mine)}</small></button>`; }).join("")}</div>`;
+}
+function viewWeek(){
+  const adm = isAdmin(), act = activeMatches(), m = currentMatch();
+  if (!m) return `<div class="notice"><b>Maç henüz açılmadı</b>${adm ? `<a href="#yonetim">Yönetim</a> sekmesinden bu haftanın maçlarını ekle.` : "Organizatör bu haftanın maçlarını açınca burada göreceksin."}</div>`;
+  const { cap, kadro, yedek, outs, mine, why } = derive(m.id);
+  const open = m.open, d = mDate(m), ml = mapLinks(m), cl = calLink(m);
+  let h = matchTabs(act, m) + `<section class="pitch board">
+    <div class="status ${open ? "" : "closed"}"><i></i>${esc(m.label)} · ${open ? "Kayıt açık" : "Kayıt kapandı"}</div>
+    <div class="day">${d ? esc(dayName(d)) : "Tarih yok"}</div>
+    <div class="date">${d ? esc(dateLine(d, m)) : ""}</div>
+    ${m.place ? `<div class="place">${esc(m.place)}</div>` : ""}
+    <div class="links">
+      ${ml ? `<a class="olink lime" href="${esc(ml.dir)}" target="_blank" rel="noopener">${ICON.nav}Yol tarifi</a>` : ""}
+      ${cl ? `<a class="olink" href="${esc(cl)}" target="_blank" rel="noopener">${ICON.cal}Takvime ekle</a>` : ""}
+    </div></section>`;
+
+  if (sess.no){
+    const p = me(), pos = validPos(p && p.pos);
+    let q = `<p class="q">Bu maça geliyor musun?</p>`;
+    if (mine && mine.status === "in"){
+      const ki = kadro.findIndex(v => v.id === sess.no), yi = yedek.findIndex(v => v.id === sess.no);
+      q = ki >= 0 ? `<p class="q">✅ Oynuyorsun</p>`
+        : `<p class="q bench">⏳ Yedektesin · ${yi + 1}. sıradasın</p>`;
+    } else if (mine && mine.status === "out") q = `<p class="q out">❌ Gelmiyorsun</p>`;
+    const dis = (!open || busy) ? "disabled" : "";
+    const posBox = `${posOpen ? `<p style="margin:0 0 8px;font-size:14px;color:var(--muted)">En sevdiğinden başlayarak 3 mevki seç:</p>${posPicker(myPosEdit || pos, "me")}<div class="acts" style="margin:0 0 14px"><button class="btn pri" data-act="savepos">Kaydet</button><button class="btn" data-act="posclose">Vazgeç</button></div>`
+        : `<div class="mypos"><span>Mevkilerin: <b>${pos.length ? pos.map(k => POS[k]).join(", ") : "seçilmedi"}</b></span><button class="textbtn" data-act="posopen">Değiştir</button></div>`}`;
+    h += `<section class="vote">${q}
+      <div class="vbtns">
+        <button class="vb yes ${mine && mine.status === "in" ? "sel" : ""}" data-act="in" ${dis}>${mine && mine.status === "in" ? "✓ " : ""}Geliyorum</button>
+        <button class="vb no ${mine && mine.status === "out" ? "sel" : ""}" data-act="out" ${dis}>Gelemiyorum</button>
+      </div>
+      ${mine && open ? `<div class="acts" style="margin-top:10px"><button class="textbtn" data-act="clear">Cevabımı sil</button></div>` : ""}
+      
+      <div class="posrow">${posBox}</div>
+    </section>`;
+  }
+
+  h += viewBallot(m, kadro);
+  const filled = Math.min(kadro.length, cap);
+  h += `<div class="count"><div class="big">${pad(filled)}<span>/${cap}</span></div>
+      <div class="meta">${cap - filled > 0 ? `<b>${cap - filled} yer boş</b>` : "<b>Kadro doldu</b>"}<br>${yedek.length} yedek · ${outs.length} gelmiyor</div></div>
+    <div class="ticks" style="grid-template-columns:repeat(${cap},1fr)">${Array.from({ length: cap }, (_, i) => `<i class="${i < filled ? "on" : ""}"></i>`).join("")}</div>`;
+
+  h += viewTeams(m, kadro, yedek, cap);
+  const li = (v, label) => {
+    if (rowMenu === v.id) return `<li class="li menu"><span class="nm" style="flex-basis:100%">${esc(vName(v))}</span>
+      <button class="btn" data-act="remove" data-id="${esc(v.id)}">Listeden çıkar</button>
+      ${!v.guest ? `<button class="btn danger" data-act="removeban" data-id="${esc(v.id)}">Çıkar ve banla</button>` : ""}
+      <button class="textbtn" data-act="menu" data-id="">Vazgeç</button></li>`;
+    return `<li class="li ${sess.no === v.id ? "mine" : ""}">
+      <span class="no">${label}</span>
+      <span class="nm">${v.guest ? esc(vName(v)) : plink(v.id, vName(v))}${sess.no === v.id ? `<span class="tag">sen</span>` : ""}${v.guest ? `<span class="tag">misafir</span>` : ""}${why[v.id] ? `<span class="why">zaten ${esc(why[v.id])} kadrosunda</span>` : ""}</span>
+      ${posTag(v.pos)}${adm ? `<span class="tm">${v.at ? esc(fmtAt(v.at)) : ""}</span>` : ""}
+      ${adm ? `<button class="x" title="İşlemler" data-act="menu" data-id="${esc(v.id)}">⋯</button>` : ""}</li>`;
+  };
+  let rows = kadro.map((v, i) => li(v, pad(i + 1))).join("");
+  for (let i = kadro.length; i < cap; i++) rows += `<li class="li empty"><span class="no">${pad(i + 1)}</span><span class="nm">—</span></li>`;
+  h += `<section class="sec"><div class="sh"><h2>Oynayacaklar</h2><span class="n">${kadro.length}/${cap}</span></div><ul class="list">${rows}</ul></section>`;
+  h += `<section class="sec"><div class="sh"><h2>Yedekler</h2><span class="n">${yedek.length}</span></div>
+    ${yedek.length ? `<ul class="list bench">${yedek.map((v, i) => li(v, "Y" + (i + 1))).join("")}</ul>` : `<p class="hint">Yedek yok.</p>`}</section>`;
+  if (outs.length) h += `<section class="sec"><div class="sh"><h2>Gelmeyecekler</h2><span class="n">${outs.length}</span></div><div class="outs">${outs.map(v => `<span>${esc(vName(v))}</span>`).join("")}</div></section>`;
+  if (adm) h += `<section class="sec"><div class="sh"><h2>Dışarıdan oyuncu ekle</h2></div>
+    <div class="panel">
+      <label class="f"><span>İsim</span><input type="text" id="gName" maxlength="40" placeholder="Kayıtlı olmayan oyuncunun adı" value="${esc(gName)}"></label>
+      <label class="f" style="margin-bottom:8px"><span>Mevki tercihi (sırayla)</span></label>${posPicker(gPos, "guest")}
+      <button class="btn pri" data-act="guest">${esc(m.label)} listesine ekle</button>
+    </div></section>`;
+  return h;
+}
+
+function viewBallot(m, kadro){
+  const st = voteState(m); if (st === "none" || st === "before") return "";
+  const mine = sess.no ? ballots.find(b => b.matchId === m.id && b.voter === sess.no) : null;
+  const cnt = ballots.filter(b => b.matchId === m.id).length;
+  if (st === "open"){
+    const amIn = !!sess.no && kadro.some(v => v.id === sess.no);
+    let h = `<section class="sec"><div class="ballot"><div class="bh"><b>${esc(m.label)} · maçın oyuncusunu seç</b><small>Kapanış: ${esc(fmtWhenMs(m.voteUntil))} · ${cnt} kişi oy verdi</small></div>`;
+    if (!amIn) return h + `<p class="hint" style="margin:12px 16px 14px">Sadece maçta oynayanlar oy verebilir.</p></div></section>`;
+    h += kadro.filter(v => v.id !== sess.no).map(v => `<button class="opt ${mine && mine.pick === v.id ? "sel" : ""}" data-act="ballot" data-id="${esc(v.id)}" ${busy ? "disabled" : ""}><span class="rad"></span><span class="nm">${esc(vName(v))}</span>${posTag(v.pos)}</button>`).join("");
+    return h + `${mine ? `<p class="hint" style="margin:10px 16px 14px">Oyun kaydedildi.</p>` : `<div style="height:6px"></div>`}</div></section>`;
+  }
+  const res = results.find(r => r.matchId === m.id), t = tallyLive(m.id);
+  if (!t.length && !(res && res.motm)) return "";
+  const wk = res ? effMotm(res) : winnerOf(t, []);
+  const x = t.find(q => q.key === wk);
+  const nm = wk ? (wk.startsWith("n:") ? (x ? x.name : "Misafir") : pName(wk)) : "";
+  return `<section class="sec">${wk ? `<${res ? `a href="#mac-${esc(m.id)}"` : "div"} class="mvp" style="text-decoration:none"><div><small>${esc(m.label)} · maçın oyuncusu</small><br><b>${esc(nm)}</b></div><small>${x && !(res && res.motm) ? x.n + " oy" : "Admin seçti"}</small></${res ? "a" : "div"}>`
+    : `<p class="hint">Oylamada eşitlik çıktı, kararı admin verecek.</p>`}</section>`;
+}
+
+function viewTeams(m, kadro, yedek, cap){
+  const T = buildTeams(kadro, cap, m), size = Math.floor(cap / 2), adm = isAdmin();
+  let h = `<section class="sec"><div class="sh"><h2>Takımlar</h2><span class="n">${T ? (T.edited ? `<span class="badge y">Admin düzenledi</span>` : `<span class="badge">Öneri</span>`) : `${size}'ya ${size}`}</span></div>`;
+  if (lineupEdit && adm && lineupEdit.mid === m.id){
+    const all = kadro.concat(yedek), opt = (v, cur) => `<option value="${v}" ${cur === v ? "selected" : ""}>`;
+    const cnt = Object.values(lineupEdit.map).filter(x => x !== "Y").length;
+    return h + `<p class="hint" style="margin:0 2px 10px">Kadroda <b>${cnt}/${cap}</b> kişi var.</p>
+      <div class="list ed">${all.map(v => { const cur = lineupEdit.map[v.id] || "Y", [tm, ps] = cur === "Y" ? ["Y", ""] : cur.split("-");
+      return `<div class="li ${tm === "Y" ? "off" : ""}"><span class="nm">${esc(vName(v))}<span class="sub2">istediği: ${validPos(v.pos).map(k => POS[k]).join(", ") || "—"}</span></span>
+        <select data-act="lu" data-id="${esc(v.id)}" data-k="t">${opt("A", tm)}${esc(tName(m, "A"))}</option>${opt("B", tm)}${esc(tName(m, "B"))}</option>${opt("Y", tm)}Yedek</option></select>
+        <select data-act="lu" data-id="${esc(v.id)}" data-k="p" ${tm === "Y" ? "disabled" : ""}>${["KL","DF","OS","FV"].map(k => `${opt(k, ps)}${POS[k]}</option>`).join("")}</select></div>`; }).join("")}</div>
+      <div class="acts"><button class="btn pri" data-act="lusave">Kadroyu kaydet</button><button class="btn" data-act="lureset">Öneriye dön</button><button class="btn" data-act="lucancel">Vazgeç</button></div></section>`;
+  }
+  if (!T) return h + `<p class="hint">Kadro dolunca takımlar burada çıkar.</p>
+    ${adm && kadro.length ? `<div class="acts" style="margin-top:10px"><button class="btn" data-act="luedit">Takımları elle kur</button></div>` : ""}</section>`;
+  const nm = p => `<span>${esc(vName(p.v))}${p.late ? `<sup>yeni</sup>` : ""}</span>`;
+  const card = (t, i) => `<div class="team ${i ? "b" : ""}"><div class="th"><b>${esc(tName(m, t.id))}</b><span>${Object.values(t.lines).flat().length} kişi</span></div>
+    ${["FV","OS","DF"].map(k => t.lines[k].length ? `<div class="line"><span class="ab">${POS[k]}</span><div class="ns">${t.lines[k].map(nm).join("")}</div></div>` : "").join("")}
+    <div class="line"><span class="ab">Kaleci</span><div class="ns">${t.lines.KL.length ? t.lines.KL.map(nm).join("") : `<span class="rot">Sırayla geçilecek</span>`}</div></div></div>`;
+  return h + `<div class="teams">${T.map(card).join("")}</div>
+    ${adm ? `<div class="acts" style="margin-top:10px"><button class="btn pri" data-act="luedit">Takımları düzenle</button><button class="btn" data-act="shuffle">Yeniden öner</button>
+      <a class="btn lime" href="https://wa.me/?text=${encodeURIComponent(waText(m))}" target="_blank" rel="noopener">${ICON.wa}Paylaş</a></div>` : ""}</section>`;
+}
+
+/* ---------- maçlar ---------- */
+function viewMatches(){
+  const list = results.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.label).localeCompare(String(a.label)));
+  if (!list.length) return `<div class="notice"><b>Henüz maç yok</b>Yönetici maç sonuçlarını girdikçe burada listelenir.</div>`;
+  sList("maclar", list.map(r => ({ key: "", row: () => {
+    const sc = teamScore(r), mk = effMotm(r), mv = mk ? (r.players || []).find(p => p.key === mk) : null;
+    return `<a class="li" href="#mac-${esc(r.matchId)}"><span class="tm" style="width:92px">${esc(shortDate(r.date))}${r.label ? `<br>${esc(r.label)}` : ""}</span>
+      <span class="nm">${sc ? `<b>${esc(tName(r, "A"))} ${sc.A} – ${sc.B} ${esc(tName(r, "B"))}</b>` : `${(r.players || []).filter(p => p.played).length} oyuncu`}${mv ? `<small class="sub2">Maçın oyuncusu: ${esc(rName(mv))}</small>` : ""}</span><span class="chev">›</span></a>`; } })));
+  return `<h1 class="h1">Geçmiş maçlar</h1><ul class="list" id="sl-maclar">${sRows("maclar")}</ul><div id="sf-maclar">${sFoot("maclar")}</div>`;
+}
+function viewMatchDetail(id){
+  const r = results.find(x => x.matchId === id);
+  if (!r) return `<div class="notice"><b>Maç bulunamadı</b><a href="#maclar">Maçlara dön</a></div>`;
+  const sc = teamScore(r), ps = (r.players || []).filter(p => p.played), mk = effMotm(r), mv = mk ? ps.find(p => p.key === mk) : null;
+  const tl = tallyOf(r), tot = tl.reduce((s, x) => s + x.n, 0), lm = mById(r.matchId);
+  const pl = p => `<div class="line"><span class="ab">${p.goals ? p.goals + "G" : ""}</span><div class="ns"><span>${plink(p.no, rName(p))}${p.assists ? `<em>${p.assists} asist</em>` : ""}</span></div></div>`;
+  let h = `<p class="hint" style="margin-top:16px"><a href="#maclar">‹ Maçlar</a></p>`;
+  const sub = `${r.label ? esc(r.label) + " · " : ""}${esc(shortDate(r.date))}${r.place ? " · " + esc(r.place) : ""}`;
+  h += sc ? `<section class="pitch score"><span class="circle"></span><span class="t a">${esc(tName(r, "A"))}</span><span class="s">${sc.A} – ${sc.B}</span><span class="t">${esc(tName(r, "B"))}</span><span class="sub">${sub}</span></section>`
+          : `<h1 class="h1">${esc(r.label || shortDate(r.date))}</h1><p class="hint">${sub}</p>`;
+  if (mv) h += `<div class="mvp"><div><small>Maçın oyuncusu</small><br><b>${plink(mv.no, rName(mv))}</b></div><small style="text-align:right">${r.motm ? "Admin seçti" : `${(tl.find(x => x.key === mk) || { n: 0 }).n} oy`}</small></div>`;
+  else if (voteOpenFor(r.matchId) && lm) h += `<p class="hint">Maçın oyuncusu oylaması sürüyor. Kapanış: ${esc(fmtWhenMs(lm.voteUntil))}.</p>`;
+  else if (tl.length) h += `<p class="hint">Oylamada eşitlik çıktı, kararı admin verecek.</p>`;
+  if (tl.length && !voteOpenFor(r.matchId)) h += `<section class="sec"><div class="sh"><h2>MVP oylaması</h2><span class="n">${tot} oy</span></div><ul class="list">
+    ${tl.slice(0, 5).map(x => `<li class="li" style="display:block"><div style="display:flex;justify-content:space-between"><span class="nm">${plink(x.key.startsWith("n:") ? null : x.key, x.key.startsWith("n:") ? x.name : (players[x.key] ? players[x.key].name : x.name))}</span><span class="pos">${x.n} oy</span></div><div class="bar"><i style="width:${Math.round(x.n / tot * 100)}%"></i></div></li>`).join("")}</ul></section>`;
+  const scorers = ps.filter(p => p.goals).sort((a, b) => b.goals - a.goals);
+  if (scorers.length) h += `<section class="sec"><div class="sh"><h2>Goller</h2><span class="n">${scorers.reduce((s, p) => s + p.goals, 0)}</span></div><ul class="list">
+    ${scorers.map(p => `<li class="li"><span class="nm">${plink(p.no, rName(p))}${p.team ? `<span class="tag ${p.team === "A" ? "ta" : ""}">${esc(tName(r, p.team))}</span>` : ""}</span><span class="pos">${p.goals} gol${p.assists ? " · " + p.assists + " asist" : ""}</span></li>`).join("")}</ul></section>`;
+  const A = ps.filter(p => p.team === "A"), B = ps.filter(p => p.team === "B"), N = ps.filter(p => p.team !== "A" && p.team !== "B");
+  h += `<section class="sec"><div class="sh"><h2>Kadrolar</h2><span class="n">${ps.length} oyuncu</span></div>`;
+  if (A.length || B.length) h += `<div class="teams"><div class="team"><div class="th"><b>${esc(tName(r, "A"))}</b><span>${sc ? sc.A : ""}</span></div>${A.map(pl).join("")}</div>
+    <div class="team b"><div class="th"><b>${esc(tName(r, "B"))}</b><span>${sc ? sc.B : ""}</span></div>${B.map(pl).join("")}</div></div>`;
+  if (N.length) h += `<ul class="list">${N.map(p => `<li class="li"><span class="nm">${plink(p.no, rName(p))}</span><span class="pos">${p.goals || 0}G ${p.assists || 0}A</span></li>`).join("")}</ul>`;
+  h += `</section>`;
+  if (isAdmin()) h += `<div class="acts" style="margin-top:20px"><button class="btn" data-act="draft" data-id="${esc(r.matchId)}">Sonucu düzenle</button>
+    <button class="btn danger" data-act="delres" data-id="${esc(r.matchId)}">${confirmKey === "del:" + r.matchId ? "Emin misin? Sil" : "Sonucu sil"}</button></div>`;
+  return h;
+}
+
+/* ---------- oyuncular ---------- */
+function viewPlayers(){
+  const agg = aggregate();
+  const list = Object.entries(players).map(([no, p]) => ({ no, ...p, s: agg[no] || { m: 0, g: 0, mvp: 0 } })).sort((a, b) => a.name.localeCompare(b.name, "tr"));
+  const adm = isAdmin();
+  return `<h1 class="h1">Oyuncular</h1><p class="hint" style="margin:0 0 10px">${list.length} kayıtlı oyuncu</p>
+    ${sBox("oyuncular", adm ? "İsim ya da öğrenci no ara" : "İsim ara")}
+    ${sList("oyuncular", list.map(p => ({ key: sKey(p.name, p.no), row: () => `<a class="li ${p.no === sess.no ? "mine" : ""}" href="#oyuncu-${esc(p.no)}"><span class="nm">${esc(p.name)}${isBanned(p) ? `<span class="tag red">banlı</span>` : ""}${admins.some(a => a.no === p.no) ? `<span class="tag">admin</span>` : ""}${adm ? `<small class="sub2">${esc(p.no)}</small>` : ""}</span>
+      ${posTag(p.pos)}<span class="tm">${p.s.m}M ${p.s.g}G</span><span class="chev">›</span></a>` })))}
+    <ul class="list" id="sl-oyuncular">${sRows("oyuncular")}</ul><div id="sf-oyuncular">${sFoot("oyuncular")}</div>`;
+}
+function viewPlayer(no){
+  const p = players[no];
+  if (!p) return `<div class="notice"><b>Oyuncu bulunamadı</b><a href="#oyuncular">Oyunculara dön</a></div>`;
+  const s = aggregate()[no] || { m: 0, g: 0, a: 0, mvp: 0, w: 0, d: 0, l: 0 };
+  const adm = isAdmin(), adminRec = admins.find(a => a.no === no);
+  let h = `<p class="hint" style="margin-top:16px"><a href="#oyuncular">‹ Oyuncular</a></p>
+    <h1 class="h1">${esc(p.name)}</h1>
+    <p class="hint" style="margin:0">${validPos(p.pos).map(k => POS[k]).join(" › ") || "Mevki seçilmedi"}${isBanned(p) ? ` · <b style="color:var(--red)">${banEnd(p) === Infinity ? "banlı" : "banlı, bitiş: " + esc(fmtEnd(banEnd(p)))}</b>` : ""}</p>
+    <div class="grid">
+      <div><b>${s.m}</b><small>Maç</small></div><div><b>${s.g}</b><small>Gol</small></div><div><b>${s.a}</b><small>Asist</small></div>
+      <div><b>${s.mvp}</b><small>Maçın oyuncusu</small></div><div><b>${s.m ? (s.g / s.m).toFixed(1) : "0.0"}</b><small>Gol / maç</small></div><div><b>${s.w}-${s.d}-${s.l}</b><small>G-B-M</small></div>
+    </div>`;
+  const hist = results.filter(r => (r.players || []).some(x => x.key === no && x.played)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  h += `<section class="sec"><div class="sh"><h2>Maçları</h2><span class="n">${hist.length}</span></div>${hist.length ? `<ul class="list">${hist.map(r => {
+      const x = r.players.find(q => q.key === no), sc = teamScore(r);
+      let res = ""; if (sc && (x.team === "A" || x.team === "B")){ const o = x.team === "A" ? "B" : "A"; res = sc[x.team] > sc[o] ? "G" : sc[x.team] < sc[o] ? "M" : "B"; }
+      return `<a class="li" href="#mac-${esc(r.matchId)}"><span class="tm" style="width:92px">${esc(shortDate(r.date))}</span><span class="nm">${x.goals || 0} gol · ${x.assists || 0} asist${effMotm(r) === no ? `<span class="tag y">MVP</span>` : ""}</span>${res ? `<span class="pos">${res}</span>` : ""}<span class="chev">›</span></a>`; }).join("")}</ul>` : `<p class="hint">Henüz maç kaydı yok.</p>`}</section>`;
+  if (adm){
+    const rs = resetShown && resetShown.no === no && Date.now() < resetShown.until ? resetShown : null;
+    h += `<section class="sec"><div class="sh"><h2>Yönetici işlemleri</h2></div><div class="panel">
+    <p class="hint" style="margin:0 0 12px">Öğrenci no: <b>${esc(no)}</b> · Kayıt: ${p.createdAt ? esc(new Date(p.createdAt).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })) : "—"}</p>
+    ${rs ? `<div class="panel" style="background:var(--mine);border-color:var(--mine);margin-bottom:14px"><h3>Şifre sıfırlama kodu</h3><div class="codebox">${esc(rs.code.slice(0, 4) + " " + rs.code.slice(4))}</div>
+      <p class="hint" style="margin:6px 0 0">${esc(p.name)} adlı oyuncuya ilet. Son geçerlilik: ${esc(fmtAt(rs.until).split(" ")[1])}</p>
+      <div class="acts"><button class="btn" data-act="copycode">Kodu kopyala</button></div></div>` : ""}
+    ${lockOf(no) ? `<p class="hint" style="margin:0 0 10px;color:var(--red)">Otomatik kilitli · bitiş: ${esc(fmtEnd(lockOf(no)))}</p>` : ""}
+    ${isBanned(p) ? "" : `<label class="f"><span>Banla</span></label><div class="acts" style="margin:0 0 16px">${[[1,"1 gün"],[3,"3 gün"],[7,"1 hafta"],[30,"1 ay"],[0,"Kalıcı"]].map(([dd, l]) => `<button class="btn danger" data-act="ban" data-id="${esc(no)}" data-d="${dd}">${l}</button>`).join("")}</div>`}
+    <label class="f"><span>Mevkilerini değiştir</span></label>${posPicker(admPos || validPos(p.pos), "adm")}
+    <button class="btn" data-act="admpos" data-id="${esc(no)}" style="margin-bottom:16px">Mevkileri kaydet</button>
+    <label class="f"><span>İsmi düzelt</span></label><div class="inline"><input type="text" id="renameIn" maxlength="40" value="${esc(renameVal || p.name)}"><button class="btn" data-act="rename" data-id="${esc(no)}">Kaydet</button></div>
+    <div class="acts">
+      ${isBanned(p) ? `<button class="btn" data-act="ban" data-id="${esc(no)}" data-d="-1">Banı kaldır</button>` : ""}
+      ${lockOf(no) ? `<button class="btn" data-act="unlock" data-id="${esc(no)}">Otomatik kilidi aç</button>` : ""}
+      <button class="btn" data-act="reset" data-id="${esc(no)}">${rs ? "Yeni kod üret" : "Şifre sıfırlama kodu ver"}</button>
+      ${adminRec ? `<button class="btn" data-act="unadmin" data-id="${esc(adminRec.id)}">Adminlikten çıkar</button>` : `<button class="btn" data-act="mkadmin" data-id="${esc(no)}">Admin yap</button>`}
+      <button class="btn danger" data-act="delplayer" data-id="${esc(no)}">${confirmKey === "delp:" + no ? "Emin misin? Kaydı sil" : "Kaydı sil"}</button>
+    </div>
+    <p class="hint">Şifreler kimseye görünmez. Şifresini unutan oyuncu sana ulaşır; sen kod üretip ona iletirsin, o da yeni şifresini kendisi belirler. Adı ve istatistikleri korunur.</p></div></section>`;
+  }
+  return h;
+}
+
+/* ---------- istatistik ---------- */
+function viewStats(){
+  const rows = Object.values(aggregate());
+  if (!rows.length) return `<div class="notice"><b>Henüz istatistik yok</b>Maç sonuçları girildikçe gol krallığı ve sıralamalar burada görünecek.</div>`;
+  const by = { g: (a, b) => b.g - a.g || a.m - b.m, a: (a, b) => b.a - a.a || b.g - a.g, mvp: (a, b) => b.mvp - a.mvp || b.g - a.g, m: (a, b) => b.m - a.m || b.g - a.g };
+  const king = rows.slice().sort(by.g)[0], mvpK = rows.slice().sort(by.mvp)[0];
+  rows.sort(by[statSort]);
+  let h = `<h1 class="h1">İstatistik</h1>`;
+  if (king && king.g) h += `<section class="pitch king"><span class="circle"></span><div><small>Gol kralı</small><div class="who">${plink(king.no, aName(king))}</div></div><div class="g">${king.g}<span>GOL</span></div></section>`;
+  if (mvpK && mvpK.mvp) h += `<section class="king dark" style="margin-top:8px"><div><small>En çok maçın oyuncusu</small><div class="who">${plink(mvpK.no, aName(mvpK))}</div></div><div class="g">${mvpK.mvp}<span>MVP</span></div></section>`;
+  const hl = k => statSort === k ? "hl" : "";
+  h += `<div class="seg">${[["g","Gol"],["a","Asist"],["mvp","MVP"],["m","Maç"]].map(([k, l]) => `<button data-act="sort" data-k="${k}" class="${statSort === k ? "on" : ""}">${l}</button>`).join("")}</div>
+    ${sBox("istatistik", isAdmin() ? "İsim ya da öğrenci no ara" : "İsim ara")}
+    ${sList("istatistik", rows.map((r, i) => ({ key: sKey(aName(r), r.no), row: () => `<tr class="${r.no && r.no === sess.no ? "mine" : ""}"><td>${i + 1}</td><td>${plink(r.no, aName(r))}</td><td class="${hl("m")}">${r.m}</td><td class="${hl("g")}">${r.g}</td><td class="${hl("a")}">${r.a}</td><td class="${hl("mvp")}">${r.mvp}</td></tr>` })))}
+    <div class="tblw"><table class="tbl"><thead><tr><th>#</th><th>Oyuncu</th><th>M</th><th>G</th><th>A</th><th>MVP</th></tr></thead><tbody id="sl-istatistik">${sRows("istatistik")}</tbody></table></div><div id="sf-istatistik">${sFoot("istatistik")}</div>`;
+  return h;
+}
+
+/* ---------- hesap ---------- */
+function viewAccount(){
+  const p = me();
+  let h = `<h1 class="h1">${sess.master ? esc(masterName()) : esc(p ? p.name : "")}</h1>
+    <p class="hint" style="margin:0">${sess.master ? "Ana admin hesabıyla giriş yaptın." : "Öğrenci no: <span class='pos'>" + esc(sess.no) + "</span>"}${isAdmin() && !sess.master ? " · admin" : ""}</p>`;
+  if (p && (isBanned(p) || myLockEnd())) h += blockedNotice();
+  if (p && !isBanned(p) && !myLockEnd()){
+    const arr = myPosEdit || validPos(p.pos);
+    h += `<section class="sec"><div class="sh"><h2>Mevki tercihim</h2></div><div class="panel">
+      ${posPicker(arr, "me")}
+      <button class="btn pri" data-act="savepos" ${myPosEdit && myPosEdit.length === 3 ? "" : "disabled"}>Kaydet</button></div></section>`;
+  }
+  h += `<section class="sec"><div class="sh"><h2>${sess.master ? "Admin şifresini değiştir" : "Şifremi değiştir"}</h2></div><div class="panel">
+    <div class="fg">
+      <label class="f"><span>Mevcut şifre</span><input type="password" id="pOld" value="${esc(fv2.pOld || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="8"'} autocomplete="current-password"></label>
+      <label class="f"><span>Yeni şifre${sess.master ? " (en az 8 karakter)" : ""}</span><input type="password" id="pNew" value="${esc(fv2.pNew || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="8"'} autocomplete="new-password"></label>
+    </div>
+    <div class="acts"><button class="btn pri" data-act="chpin">Şifreyi değiştir</button></div>
+    
+    </div></section>
+    <div class="acts" style="margin-top:24px"><button class="btn danger" data-act="logout">Çıkış yap</button></div>`;
+  return h;
+}
+
+/* ---------- yönetim ---------- */
+const formVal = (k, def = "") => form[k] ?? def;
+function matchForm(){
+  const isNew = formFor === "new";
+  return `<div class="panel" style="margin-top:10px"><h3>${isNew ? "Yeni maç" : esc(formVal("label")) + " · düzenle"}</h3><div class="fg">
+      <label class="f full"><span>Maç adı</span><input type="text" maxlength="24" data-f="label" value="${esc(formVal("label"))}" placeholder="Maç 1"></label>
+      <label class="f"><span>Tarih</span><input type="date" data-f="date" value="${esc(formVal("date"))}"></label>
+      <label class="f"><span>Saat</span><input type="time" data-f="time" value="${esc(formVal("time"))}"></label>
+      <label class="f"><span>1. takımın adı</span><input type="text" maxlength="16" data-f="teamA" placeholder="${TEAM_A}" value="${esc(formVal("teamA"))}"></label>
+      <label class="f"><span>2. takımın adı</span><input type="text" maxlength="16" data-f="teamB" placeholder="${TEAM_B}" value="${esc(formVal("teamB"))}"></label>
+      <label class="f"><span>Kadro sayısı</span><input type="number" min="4" max="30" step="2" data-f="capacity" value="${esc(formVal("capacity", 12))}"></label>
+      <label class="f"><span>Süre (dk)</span><input type="number" min="30" max="180" step="15" data-f="duration" value="${esc(formVal("duration", 60))}"></label>
+      <label class="f full"><span>Saha adı</span><input type="text" maxlength="60" data-f="place" placeholder="Örn. Davutpaşa Kampüsü Halı Saha" value="${esc(formVal("place"))}"></label>
+      <label class="f full"><span>Konum <em>· Google Maps linki, koordinat (41.02, 28.89) ya da adres</em></span><input type="text" maxlength="300" data-f="loc" placeholder="https://maps.app.goo.gl/…" value="${esc(formVal("loc"))}"></label>
+    </div><div class="acts"><button class="btn pri" data-act="msave">${isNew ? "Maçı aç" : "Kaydet"}</button><button class="btn" data-act="mcancel">Vazgeç</button></div></div>`;
+}
+function viewAdmin(){
+  const act = activeMatches(), L = lineups();
+  let h = `<h1 class="h1">Yönetim</h1>
+    <section class="sec"><div class="sh"><h2>Bu haftanın maçları</h2><span class="n">${act.length}</span></div>`;
+  if (!act.length && formFor !== "new") h += `<p class="hint" style="margin-top:0">Henüz açık maç yok.</p>`;
+  for (const m of act){
+    const x = L[m.id], hasRes = results.some(r => r.matchId === m.id), vs = voteState(m);
+    h += `<div class="panel" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3 style="margin:0">${esc(mTitle(m))}</h3><span class="badge ${m.open ? "" : "y"}">${m.open ? "kayıt açık" : "kayıt kapalı"}</span></div>
+      <p class="hint" style="margin:6px 0 0">Kadro ${Math.min(x.kadro.length, x.cap)}/${x.cap} · ${x.yedek.length} yedek · sonuç ${hasRes ? "girildi" : "girilmedi"}${vs === "open" ? " · MVP oylaması sürüyor" : ""}</p>
+      <div class="acts">
+        <button class="btn" data-act="medit" data-id="${esc(m.id)}">Düzenle</button>
+        <button class="btn" data-act="toggle" data-id="${esc(m.id)}">${m.open ? "Kaydı kapat" : "Kaydı aç"}</button>
+        <button class="btn" data-act="draft" data-id="${esc(m.id)}">${hasRes ? "Sonucu düzenle" : "Sonuç gir"}</button>
+        <a class="btn lime" href="https://wa.me/?text=${encodeURIComponent(waText(m))}" target="_blank" rel="noopener">${ICON.wa}Paylaş</a>
+        <button class="btn danger" data-act="mdel" data-id="${esc(m.id)}">${confirmKey === "mdel:" + m.id ? "Emin misin? Sil" : "Sil"}</button>
+      </div></div>`;
+    if (formFor === m.id) h += matchForm();
+    if (draft && draft.matchId === m.id) h += viewDraft();
+  }
+  if (formFor === "new") h += matchForm();
+  h += `<div class="acts"><button class="btn pri" data-act="mnew">+ Yeni maç ekle</button>
+    ${act.length ? `<button class="btn danger" data-act="weekend">${confirmKey === "weekend" ? weekendWarn(act) : "Haftayı bitir"}</button>` : ""}</div></section>`;
+  if (draft && !act.some(m => m.id === draft.matchId)) h += `<section class="sec"><div class="sh"><h2>Sonucu düzenle</h2></div>${viewDraft()}</section>`;
+  const adminRows = admins.map(a => ({ ...a, nm: a.master ? (a.name || MASTER_NAME) + " (ana admin)" : pName(a.no) }));
+  h += `<section class="sec"><div class="sh"><h2>Adminler</h2><span class="n">${adminRows.length}</span></div><ul class="list">
+    ${adminRows.map(a => `<li class="li"><span class="nm">${a.no ? plink(a.no, a.nm) : esc(a.nm)}</span>${a.no ? `<span class="pos">${esc(a.no)}</span>` : ""}
+      ${!a.master && a.id !== sess.uid ? `<button class="textbtn red" data-act="unadmin" data-id="${esc(a.id)}">Çıkar</button>` : ""}</li>`).join("")}</ul>
+    <div class="panel" style="margin-top:10px"><label class="f"><span>Öğrenci numarasıyla admin ekle</span></label>
+      <div class="inline"><input id="addAdminIn" inputmode="numeric" maxlength="8" placeholder="8 haneli numara" value="${esc(addAdminNo)}"><button class="btn" data-act="mkadmin">Ekle</button></div></div></section>`;
+  const allP = Object.entries(players).sort((a, b) => a[1].name.localeCompare(b[1].name, "tr"));
+  h += `<section class="sec"><div class="sh"><h2>Oyuncu verileri</h2><span class="n">${allP.length} kayıt</span></div>
+    ${sBox("veriler", "İsim ya da öğrenci no ara")}
+    ${sList("veriler", allP.map(([no, p], i) => ({ key: sKey(p.name, no), row: () => `<tr><td>${i + 1}</td><td><a href="#oyuncu-${esc(no)}">${esc(p.name)}</a></td><td style="font-size:13px">${esc(no)}</td><td style="font-size:13px">${validPos(p.pos).join("·")}</td><td style="font-size:13px">${p.banned ? "banlı" : admins.some(a => a.no === no) ? "admin" : "aktif"}</td></tr>` })))}
+    <div class="tblw"><table class="tbl"><thead><tr><th>#</th><th>Ad soyad</th><th>No</th><th>Mevki</th><th>Durum</th></tr></thead><tbody id="sl-veriler">${sRows("veriler")}</tbody></table></div><div id="sf-veriler">${sFoot("veriler")}</div>
+    <div class="acts"><button class="btn" data-act="csv">Tümünü tablo olarak kopyala</button></div></section>`;
+  const banned = Object.entries(players).filter(([, p]) => isBanned(p));
+  const locked = locks.filter(a => lockEnd(a) > Date.now() && players[a.id]);
+  if (banned.length || locked.length) h += `<section class="sec"><div class="sh"><h2>Banlılar</h2><span class="n">${banned.length + locked.length}</span></div><ul class="list">
+    ${banned.map(([no, p]) => `<li class="li"><span class="nm">${plink(no, p.name)}<small class="sub2">${banEnd(p) === Infinity ? "Kalıcı" : "Bitiş: " + esc(fmtEnd(banEnd(p)))}</small></span><button class="textbtn" data-act="ban" data-id="${esc(no)}" data-d="-1">Banı kaldır</button></li>`).join("")}
+    ${locked.map(a => `<li class="li"><span class="nm">${plink(a.id, players[a.id].name)}<small class="sub2">Otomatik kilit · bitiş: ${esc(fmtEnd(lockEnd(a)))}</small></span><button class="textbtn" data-act="unlock" data-id="${esc(a.id)}">Kilidi aç</button></li>`).join("")}</ul></section>`;
+  return h;
+}
+function weekendWarn(act){
+  if (act.some(m => voteState(m) === "open")) return "MVP oylaması sürüyor! Yine de bitir";
+  if (act.some(m => !results.some(r => r.matchId === m.id))) return "Sonucu girilmemiş maç var! Yine de bitir";
+  return "Emin misin? Haftayı bitir";
+}
+function viewDraft(){
+  const d = draft, sc = teamScore(d), bad = assistProblem(d.rows, d);
+  const played = d.rows.filter(r => r.played);
+  const known = Object.entries(players).filter(([no]) => !d.rows.some(r => r.key === no));
+  return `<div class="panel res" style="margin-bottom:10px"><h3>${esc(d.label || "Maç")} · ${esc(shortDate(d.date))}${sc ? ` · ${esc(tName(d, "A"))} ${sc.A} – ${sc.B} ${esc(tName(d, "B"))}` : ""}</h3>
+    ${bad ? `<p class="err" style="margin:0 0 8px">${esc(bad)} takımının asist sayısı gol sayısını geçiyor.</p>` : ""}
+    <ul class="list">${d.rows.map((r, i) => `<li class="li ${r.played ? "" : "off"}">
+      <input type="checkbox" class="chk" data-act="played" data-i="${i}" ${r.played ? "checked" : ""} title="Oynadı">
+      <span class="nm">${esc(rName(r))}</span>
+      <button class="tsw ${r.team || ""}" data-act="team" data-i="${i}">${r.team ? esc(tName(d, r.team)) : "Takım?"}</button>
+      <span class="step"><small>G</small><button data-act="st" data-i="${i}" data-f="goals" data-d="-1">−</button><b>${r.goals}</b><button data-act="st" data-i="${i}" data-f="goals" data-d="1">+</button></span>
+      <span class="step"><small>A</small><button data-act="st" data-i="${i}" data-f="assists" data-d="-1">−</button><b>${r.assists}</b><button data-act="st" data-i="${i}" data-f="assists" data-d="1">+</button></span>
+    </li>`).join("")}</ul>
+    <label class="f" style="margin-top:14px"><span>Maçın oyuncusu <em>· boş bırakırsan oyuncuların oylamasıyla seçilir; birini seçersen oylamanın yerine geçer</em></span>
+      <select id="motmSel"><option value="">Oylamaya göre (otomatik)</option>${played.map(r => `<option value="${esc(r.key)}" ${d.motm === r.key ? "selected" : ""}>${esc(rName(r))}</option>`).join("")}</select></label>
+    <div class="inline">
+      ${known.length ? `<select id="addKnown"><option value="">Kayıtlı oyuncu ekle…</option>${known.map(([no, p]) => `<option value="${esc(no)}">${esc(p.name)}</option>`).join("")}</select>` : ""}
+      <input type="text" id="addName" maxlength="40" placeholder="ya da misafir adı">
+      <button class="btn" data-act="addrow">Ekle</button>
+    </div>
+    <div class="acts"><button class="btn pri" data-act="saveres">Sonucu kaydet</button><button class="btn" data-act="cancelres">Vazgeç</button></div></div>`;
+}
+
+function waText(m){
+  if (!m) return "";
+  const { cap, kadro, yedek } = derive(m.id), d = mDate(m), ml = mapLinks(m);
+  let t = `*FARK HALI SAHA · ${m.label.toLocaleUpperCase("tr")}*\n${d ? dayName(d) + ", " + dateLine(d, m) : ""}\n${m.place || ""}\n${ml ? "Yol tarifi: " + ml.dir + "\n" : ""}\nKADRO (${Math.min(kadro.length, cap)}/${cap})\n`;
+  kadro.forEach((v, i) => t += `${i + 1}. ${vName(v)}\n`);
+  for (let i = kadro.length; i < cap; i++) t += `${i + 1}. —\n`;
+  if (yedek.length){ t += `\nYEDEK\n`; yedek.forEach((v, i) => t += `Y${i + 1}. ${vName(v)}\n`); }
+  const T = buildTeams(kadro, cap, m);
+  if (T) T.forEach(tm => { t += `\n*${tName(m, tm.id).toLocaleUpperCase("tr")}*\nKL: ${tm.lines.KL.length ? tm.lines.KL.map(p => vName(p.v)).join(", ") : "dönüşümlü"}\n`; ["DF","OS","FV"].forEach(k => { if (tm.lines[k].length) t += `${k}: ${tm.lines[k].map(p => vName(p.v)).join(", ")}\n`; }); });
+  return t;
+}
+
+/* =========================================================
+   OLAYLAR
+   ========================================================= */
+async function guard(fn){
+  if (busy) return; busy = true; render(true);
+  try { await fn(); }
+  catch(e){ const c = (e && e.code) || ""; if (c.includes("resource-exhausted")){ quotaHit = true; toast(QUOTA); return; }
+    if (e && e.locked){ toast("Hesabın otomatik olarak kilitlendi. Adminle iletişime geç."); return; }
+    toast(c.includes("permission") ? "Bu işlem için yetkin yok. Kayıt kapalı ya da yetkin alınmış olabilir." : c.includes("unavailable") || c.includes("network") ? OFFLINE : (e && e.message && !c ? e.message : "Bir hata oldu, tekrar dene.")); }
+  finally { busy = false; render(true); }
+}
+function twoStep(key){ if (confirmKey === key){ confirmKey = null; return true; } confirmKey = key; render(true); setTimeout(() => { if (confirmKey === key){ confirmKey = null; render(); } }, 4000); return false; }
+function readForm(){
+  const g = k => form[k] ?? "";
+  const f = { label: String(g("label")).trim().slice(0, 24) || "Maç", date: String(g("date")), time: String(g("time")) || "21:00", place: String(g("place")).trim().slice(0, 60), loc: String(g("loc")).trim().slice(0, 300),
+    teamA: String(g("teamA")).trim().replace(/\s+/g, " ").slice(0, 16), teamB: String(g("teamB")).trim().replace(/\s+/g, " ").slice(0, 16),
+    capacity: Math.min(30, Math.max(4, parseInt(g("capacity"), 10) || 12)) & ~1, duration: Math.min(180, Math.max(30, parseInt(g("duration"), 10) || 60)) };
+  return { ...f, ...windowOf(f.date, f.time, f.duration) };
+}
+function startDraft(id){
+  const ex = results.find(r => r.matchId === id), m = mById(id);
+  if (ex){ draft = { matchId: id, teamA: ex.teamA || (m && m.teamA) || "", teamB: ex.teamB || (m && m.teamB) || "", label: ex.label || (m && m.label) || "", date: ex.date, place: ex.place || "", motm: ex.motm || "", rows: (ex.players || []).map(p => ({ ...p, goals: Number(p.goals) || 0, assists: Number(p.assists) || 0 })) }; }
+  else if (m){
+    const { cap, kadro, yedek } = derive(id), T = buildTeams(kadro, cap, m), teamOf = {};
+    if (T) T.forEach(t => Object.values(t.lines).flat().forEach(p => teamOf[p.v.id] = t.id));
+    const mk = (v, played) => ({ key: vKey(v), no: v.guest ? null : v.id, name: vName(v), team: teamOf[v.id] || null, played, goals: 0, assists: 0 });
+    draft = { matchId: id, teamA: m.teamA, teamB: m.teamB, label: m.label, date: m.date, place: m.place || "", motm: "", rows: kadro.map(v => mk(v, true)).concat(yedek.map(v => mk(v, false))) };
+  } else return;
+  if (location.hash !== "#yonetim") location.hash = "yonetim";
+  render(true); setTimeout(() => { const el = document.querySelector(".res"); el && el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
+}
+// Admin: oylaması kapanmış aktif maçların MVP özetini sonuca yaz (arşivden sonra oylar okunmaz)
+const mvpSummary = id => { const t = tallyLive(id), r = results.find(x => x.matchId === id); return { mvpTally: t, mvpWinner: winnerOf(t, r ? r.players : []) || "" }; };
+let syncing = false; const syncFailed = new Set();
+async function syncSummaries(){
+  if (syncing || !isAdmin() || !loaded.has("ballots")) return;
+  for (const m of activeMatches()){
+    if (voteState(m) !== "closed" || syncFailed.has(m.id)) continue;
+    const r = results.find(x => x.matchId === m.id); if (!r) continue;
+    const s = mvpSummary(m.id);
+    if (JSON.stringify(s.mvpTally) === JSON.stringify(r.mvpTally) && s.mvpWinner === r.mvpWinner) continue;
+    syncing = true; try { await api.patchResult(m.id, s); } catch(_){ syncFailed.add(m.id); } syncing = false; return;
+  }
+}
+
+document.addEventListener("submit", e => {
+  if (e.target.id !== "authForm") return;
+  e.preventDefault();
+  const no = $("#aNo").value.trim(), pin = $("#aPin").value.trim();
+  authErr = "";
+  if (!/^\d+$/.test(no)) { authErr = "Öğrenci numarası sadece rakamlardan oluşmalı."; return render(true); }
+  if (authMode === "login"){
+    if (!/^\d{4,8}$/.test(pin) && !(pin.length >= 8 && pin.length <= 40)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
+    busy = true; render(true);
+    api.login(no, pin).then(() => { busy = false; }).catch(err => { busy = false; authErr = err.message; render(true); });
+    return;
+  }
+  const pin2 = ($("#aPin2") || {}).value || "";
+  if (!/^\d{8}$/.test(no)) { authErr = "Öğrenci numarası 8 haneli olmalı."; return render(true); }
+  if (!/^\d{4,8}$/.test(pin)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
+  if (pin !== pin2.trim()) { authErr = "Şifreler aynı değil."; return render(true); }
+  if (authMode === "recover"){
+    const code = ($("#aCode").value || "").replace(/\D/g, "");
+    if (!/^\d{8}$/.test(code)) { authErr = "Sıfırlama kodu 8 haneli olmalı."; return render(true); }
+    busy = true; render(true);
+    api.recover({ no, code, pin }).then(() => { busy = false; toast("Yeni şifren kaydedildi"); }).catch(err => { busy = false; authErr = err.message; render(true); });
+    return;
+  }
+  const name = $("#aName").value.trim().replace(/\s+/g, " ");
+  if (!NAME_RE.test(name) || !name.includes(" ")) { authErr = "Adını ve soyadını yaz (sadece harf, 5-40 karakter)."; return render(true); }
+  if (regPos.length < 3) { authErr = "Sırayla 3 mevki seç."; return render(true); }
+  busy = true; render(true);
+  api.register({ no, name, pos: regPos.slice(), pin }).then(() => { busy = false; toast("Hoş geldin, " + name.split(" ")[0] + "!"); })
+    .catch(err => { busy = false; authErr = err.message; render(true); });
+});
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act, id = b.dataset.id;
+  if (b.tagName === "A" && a !== "amode") return;
+  if (a === "played") return;
+  if (a === "amode"){ e.preventDefault(); authMode = b.dataset.m; authErr = ""; render(true); return; }
+  if (a === "egg"){ const t = Date.now(); eggTaps = t - eggT < 600 ? eggTaps + 1 : 1; eggT = t; if (eggTaps >= 5 && authMode === "login"){ eggOpen = !eggOpen; eggTaps = 0; render(true); } return; }
+  if (a === "pos"){
+    const who = b.dataset.who, k = b.dataset.p;
+    let arr = who === "reg" ? regPos : who === "guest" ? gPos : who === "adm" ? (admPos ||= validPos(players[route().id] && players[route().id].pos)) : (myPosEdit ||= validPos(me() && me().pos));
+    const i = arr.indexOf(k);
+    if (i >= 0) arr.splice(i, 1); else if (arr.length < 3) arr.push(k); else { toast("En fazla 3 mevki; önce birini kaldır."); return; }
+    render(true); return;
+  }
+  const m = currentMatch(), mid = m ? m.id : null, x = mid ? derive(mid) : null, mine = x ? x.mine : null;
+  const myActiveSignups = () => sess.no ? signups.filter(s => s.id === sess.no && s.status === "in" && isLive(s.matchId)) : [];
+  switch (a){
+    case "selm": selMid = id; lineupEdit = null; rowMenu = null; posOpen = false; render(true); window.scrollTo(0, 0); break;
+    case "in": case "out": {
+      if (!m || (mine && mine.status === a)) return;
+      const pos = validPos(me() && me().pos);
+      if (a === "in" && pos.length < 3){ toast("Önce 3 mevki seç."); posOpen = true; render(true); return; }
+      guard(async () => { await api.signup(mid, sess.no, a, a === "in" ? pos : []); toast(a === "in" ? m.label + ": geliyorum" : m.label + ": gelemiyorum"); }); break;
+    }
+    case "ballot": {
+      const v = x && x.kadro.find(s => s.id === id); if (!v || id === sess.no) return;
+      guard(async () => { await api.castBallot(mid, sess.no, id, vKey(v), vName(v)); toast("Oyun kaydedildi: " + vName(v)); }); break;
+    }
+    case "clear": guard(async () => { await api.deleteSignup(mid, sess.no); toast("Kaydın geri çekildi"); }); break;
+    case "menu": rowMenu = id || null; render(true); break;
+    case "remove": rowMenu = null; guard(async () => { await api.deleteSignup(mid, id); toast("Listeden çıkarıldı"); }); break;
+    case "removeban": rowMenu = null; guard(async () => {
+      await api.updatePlayer(id, { banned: true, banUntil: null });
+      for (const s of signups.filter(s => s.id === id && isLive(s.matchId))) await api.deleteSignup(s.matchId, id);
+      toast(pName(id) + " çıkarıldı ve banlandı"); }); break;
+    case "guest": {
+      const n = gName.trim().replace(/\s+/g, " "); if (n.length < 2){ toast("İsim yaz."); return; }
+      const p = gPos.slice(); guard(async () => { await api.addGuest(mid, n, p); gName = ""; gPos = []; toast(n + " eklendi"); }); break;
+    }
+    case "shuffle": guard(async () => { await api.updateMatch(mid, { teamSeed: "s" + Date.now(), lineup: {}, squad: [] }); toast("Yeni öneri oluşturuldu"); }); break;
+    case "luedit": {
+      const T = buildTeams(x.kadro, x.cap, m), map = {};
+      x.kadro.concat(x.yedek).forEach(v => map[v.id] = "Y");
+      if (T) T.forEach(t => Object.entries(t.lines).forEach(([k, arr]) => arr.forEach(p => map[p.v.id] = t.id + "-" + k)));
+      else x.kadro.forEach((v, i) => map[v.id] = (i % 2 ? "B" : "A") + "-" + (validPos(v.pos)[0] || "OS"));
+      lineupEdit = { mid, map }; render(true); break;
+    }
+    case "lucancel": lineupEdit = null; render(true); break;
+    case "lusave": {
+      const map = lineupEdit.map, lu = {}, squad = [];
+      Object.entries(map).forEach(([who, val]) => { if (val !== "Y"){ lu[who] = val; squad.push(who); } });
+      if (!squad.length){ toast("Kadroda kimse yok."); return; }
+      const extra = squad.length > x.cap ? ` (${squad.length} kişi, kapasite ${x.cap})` : "";
+      guard(async () => { await api.updateMatch(mid, { lineup: lu, squad }); lineupEdit = null; toast("Kadro kaydedildi" + extra); }); break;
+    }
+    case "lureset": guard(async () => { await api.updateMatch(mid, { lineup: {}, squad: [] }); lineupEdit = null; toast("Öneriye dönüldü"); }); break;
+    case "posopen": posOpen = true; myPosEdit = null; render(true); break;
+    case "posclose": posOpen = false; myPosEdit = null; render(true); break;
+    case "admpos": { const pos = (admPos || []).slice(); if (pos.length !== 3){ toast("Sırayla 3 mevki seç."); return; } guard(async () => {
+      await api.updatePlayer(id, { pos });
+      for (const s of signups.filter(s => s.id === id && s.status === "in" && isLive(s.matchId))) await api.signupPos(s.matchId, id, pos).catch(() => {});
+      admPos = null; toast("Mevkiler güncellendi"); }); break; }
+    case "sort": statSort = b.dataset.k; render(true); break;
+    case "more": { const k = b.dataset.k; lim[k] = (lim[k] || PAGE) + 200; applySearch(k, true); break; }
+    case "savepos": {
+      const pos = (myPosEdit || []).slice();
+      if (pos.length !== 3){ toast("Sırayla 3 mevki seç."); return; }
+      guard(async () => { await api.updatePlayer(sess.no, { pos }); for (const s of myActiveSignups()) await api.signupPos(s.matchId, sess.no, pos).catch(() => {}); myPosEdit = null; posOpen = false; toast("Mevki tercihin kaydedildi"); }); break;
+    }
+    case "chpin": {
+      const o = $("#pOld").value.trim(), n = $("#pNew").value.trim();
+      if (sess.master){ if (o.length < 4 || n.length < 8){ toast("Yeni admin şifresi en az 8 karakter olmalı."); return; } }
+      else if (!/^\d{4,8}$/.test(o) || !/^\d{4,8}$/.test(n)){ toast("Şifreler 4-8 haneli olmalı."); return; }
+      guard(async () => { await api.changePin(o, n); if (sess.master) await api.markPw().catch(() => {}); fv2.pOld = fv2.pNew = ""; toast("Şifren değiştirildi"); }); break;
+    }
+    case "logout": history.replaceState(null, "", location.pathname); api.logout(); break;
+    case "mnew": {
+      const last = activeMatches().slice(-1)[0] || matches.slice().sort((p, q) => q.startAt - p.startAt)[0];
+      form = { label: "Maç " + (activeMatches().length + 1), teamA: "", teamB: "", date: "", time: last ? last.time : "21:00", capacity: last ? last.capacity : 12, duration: last ? last.duration : 60, place: last ? last.place : "", loc: last ? last.loc : "" };
+      formFor = "new"; render(true); break;
+    }
+    case "medit": { const mm = mById(id); form = { label: mm.label, teamA: mm.teamA, teamB: mm.teamB, date: mm.date, time: mm.time, capacity: mm.capacity, duration: mm.duration, place: mm.place, loc: mm.loc }; formFor = id; render(true); break; }
+    case "mcancel": formFor = null; form = {}; render(true); break;
+    case "msave": {
+      const f = readForm(); if (!f.date){ toast("Tarih seç."); return; }
+      if (formFor === "new"){
+        const nid = "m" + Date.now().toString(36);
+        guard(async () => { await api.createMatch({ id: nid, ...f, open: true, archived: false, teamSeed: "s" + nid, lineup: {}, squad: [], frozen: [], createdAt: Date.now() }); formFor = null; form = {}; selMid = nid; toast(f.label + " açıldı"); });
+      } else { const fid = formFor; guard(async () => { await api.updateMatch(fid, f); formFor = null; form = {}; toast("Kaydedildi"); }); }
+      break;
+    }
+    case "toggle": {
+      const mm = mById(id), xx = derive(id);
+      const patch = mm.open ? { open: false, frozen: xx.kadro.concat(xx.yedek).map(s => s.id) } : { open: true, frozen: [] };
+      guard(async () => { await api.updateMatch(id, patch); toast(mm.open ? mm.label + ": kayıt kapandı, sıra sabitlendi" : mm.label + ": kayıt açıldı"); }); break;
+    }
+    case "mdel": {
+      if (results.some(r => r.matchId === id)){ toast("Sonucu girilmiş maç silinemez; önce sonucu sil ya da haftayı bitir."); return; }
+      if (!twoStep("mdel:" + id)) return;
+      const whos = signups.filter(s => s.matchId === id).map(s => s.id);
+      guard(async () => { await api.deleteMatch(id, whos); toast("Maç silindi"); }); break;
+    }
+    case "weekend": {
+      const act = activeMatches(); if (!act.length) return;
+      if (!twoStep("weekend")) return;
+      const items = act.map(mm => ({ id: mm.id, result: results.some(r => r.matchId === mm.id) ? mvpSummary(mm.id) : null }));
+      guard(async () => { await api.archive(items); selMid = null; draft = null; toast("Hafta bitti, maçlar arşivlendi"); }); break;
+    }
+    case "csv": {
+      const agg = aggregate(), rows = [["Öğrenci no","Ad soyad","Mevki 1","Mevki 2","Mevki 3","Kayıt tarihi","Durum","Maç","Gol","Asist","MVP"]];
+      Object.entries(players).sort((p, q) => p[1].name.localeCompare(q[1].name, "tr")).forEach(([no, p]) => { const s = agg[no] || {}; const ps = validPos(p.pos);
+        rows.push([no, p.name, POS[ps[0]] || "", POS[ps[1]] || "", POS[ps[2]] || "", p.createdAt ? new Date(p.createdAt).toLocaleDateString("tr-TR") : "", isBanned(p) ? "banlı" : admins.some(q => q.no === no) ? "admin" : "aktif", s.m || 0, s.g || 0, s.a || 0, s.mvp || 0]); });
+      const safe = v => { const t = String(v).replace(/[\t\n\r]/g, " "); return /^[=+\-@]/.test(t) ? "'" + t : t; };   // tablo formülü enjeksiyonuna karşı
+      navigator.clipboard.writeText(rows.map(r => r.map(safe).join("\t")).join("\n")).then(() => toast(rows.length - 1 + " oyuncu kopyalandı"), () => toast("Kopyalanamadı"));
+      break;
+    }
+    case "copycode": if (resetShown) navigator.clipboard.writeText(resetShown.code).then(() => toast("Kod kopyalandı"), () => toast("Kopyalanamadı")); break;
+    case "draft": startDraft(id); break;
+    case "cancelres": draft = null; render(true); break;
+    case "team": { const r = draft.rows[+b.dataset.i]; r.team = r.team === "A" ? "B" : r.team === "B" ? null : "A"; render(true); break; }
+    case "st": {
+      const r = draft.rows[+b.dataset.i], f = b.dataset.f, dlt = Number(b.dataset.d), before = r[f];
+      r[f] = Math.max(0, r[f] + dlt); if (r.goals || r.assists) r.played = true;
+      const bad = assistProblem(draft.rows, draft);
+      if (bad && ((f === "assists" && dlt > 0) || (f === "goals" && dlt < 0))){ r[f] = before; toast(bad + " takımının asisti golünü geçemez."); return; }
+      render(true); break;
+    }
+    case "addrow": {
+      const sel = $("#addKnown"), nm = $("#addName");
+      if (sel && sel.value){ const no = sel.value; draft.rows.push({ key: no, no, name: pName(no), team: null, played: true, goals: 0, assists: 0 }); }
+      else if (nm && nm.value.trim()){ const n = nm.value.trim().slice(0, 40), key = "n:" + n.toLocaleLowerCase("tr"); if (!draft.rows.some(r => r.key === key)) draft.rows.push({ key, no: null, name: n, team: null, played: true, goals: 0, assists: 0 }); }
+      else { toast("Oyuncu seç ya da isim yaz."); return; }
+      render(true); break;
+    }
+    case "saveres": {
+      const d = draft, motm = ($("#motmSel") && $("#motmSel").value) || d.motm || "";
+      const bad = assistProblem(d.rows, d); if (bad){ toast(bad + " takımının asisti golünü geçemez. Düzelt ve tekrar kaydet."); return; }
+      const closed = !voteOpenFor(d.matchId) && isLive(d.matchId);
+      const prev = results.find(r => r.matchId === d.matchId);
+      guard(async () => {
+        const rec = { matchId: d.matchId, label: d.label || "", teamA: d.teamA || "", teamB: d.teamB || "", date: d.date || "", place: d.place || "", motm: d.rows.some(r => r.key === motm && r.played) ? motm : "",
+          players: d.rows.map(r => ({ key: r.key, no: r.no || null, name: r.name || "", team: r.team || null, played: !!r.played, goals: r.goals | 0, assists: r.assists | 0 })),
+          mvpTally: prev ? prev.mvpTally : [], mvpWinner: prev ? prev.mvpWinner : "" };
+        if (closed){ const t = tallyLive(d.matchId); rec.mvpTally = t; rec.mvpWinner = winnerOf(t, rec.players) || ""; }
+        await api.saveResult(rec);
+        const id2 = d.matchId; draft = null; toast("Sonuç kaydedildi"); location.hash = "mac-" + id2;
+      }); break;
+    }
+    case "delres": if (!twoStep("del:" + id)) return; guard(async () => { await api.deleteResult(id); toast("Sonuç silindi"); location.hash = "maclar"; }); break;
+    case "rename": { const n = ($("#renameIn").value || "").trim().replace(/\s+/g, " "); if (!NAME_RE.test(n)){ toast("İsim 5-40 harf olmalı."); return; } guard(async () => { await api.updatePlayer(id, { name: n }); renameVal = ""; toast("İsim güncellendi"); }); break; }
+    case "ban": { const dd = Number(b.dataset.d), ban = dd >= 0; guard(async () => {
+      await api.updatePlayer(id, dd < 0 ? { banned: false, banUntil: null } : dd === 0 ? { banned: true, banUntil: null } : { banned: false, banUntil: Date.now() + dd * 86400000 });
+      if (ban) for (const s of signups.filter(s => s.id === id && isLive(s.matchId))) await api.deleteSignup(s.matchId, id);
+      toast(!ban ? "Ban kaldırıldı" : dd === 0 ? "Oyuncu kalıcı olarak banlandı" : "Oyuncu " + (dd === 7 ? "1 hafta" : dd === 30 ? "1 ay" : dd + " gün") + " banlandı"); }); break; }
+    case "unlock": guard(async () => { await api.unlock(id); toast("Kilit açıldı"); }); break;
+    case "reset": { const code = genCode(), until = Date.now() + RESET_MINUTES * 60000; guard(async () => { await api.issueReset(id, code, until); resetShown = { no: id, code, until }; toast("Kod hazır, oyuncuya ilet"); }); break; }
+    case "mkadmin": {
+      const no = id || addAdminNo.trim(); const p = players[no];
+      if (!p){ toast("Bu numarayla kayıtlı oyuncu yok."); return; }
+      if (admins.some(q => q.no === no)){ toast("Zaten admin."); return; }
+      guard(async () => { await api.addAdmin(p.uid, no); addAdminNo = ""; toast(p.name + " admin yapıldı"); }); break;
+    }
+    case "unadmin": guard(async () => { await api.removeAdmin(id); toast("Adminlikten çıkarıldı"); }); break;
+    case "delplayer": if (!twoStep("delp:" + id)) return; guard(async () => {
+      for (const s of signups.filter(s => s.id === id && isLive(s.matchId))) await api.deleteSignup(s.matchId, id);
+      await api.deletePlayer(id); toast("Kayıt silindi"); location.hash = "oyuncular"; }); break;
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.act === "lu" && lineupEdit){
+    const id = t.dataset.id, cur = lineupEdit.map[id] || "Y", v = t.dataset.k === "t" ? t.value : null;
+    const pref = (() => { const s = signups.find(q => q.id === id && q.matchId === lineupEdit.mid); return (s && validPos(s.pos)[0]) || "OS"; })();
+    if (v === "Y") lineupEdit.map[id] = "Y";
+    else if (v) lineupEdit.map[id] = v + "-" + (cur === "Y" ? pref : cur.split("-")[1]);
+    else if (cur !== "Y") lineupEdit.map[id] = cur.split("-")[0] + "-" + t.value;
+    render(true); return;
+  }
+  if (t.dataset.act === "played"){ draft.rows[+t.dataset.i].played = t.checked; render(true); }
+  else if (t.id === "motmSel" && draft) draft.motm = t.value;
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.f) form[t.dataset.f] = t.value;
+  else if (t.id === "gName") gName = t.value;
+  else if (t.id === "renameIn") renameVal = t.value;
+  else if (t.id === "addAdminIn") addAdminNo = t.value;
+  else if (t.dataset.srch){ srch[t.dataset.srch] = t.value; applySearch(t.dataset.srch); return; }
+  const digitsOnly = ["aNo","aPin2","aCode"].includes(t.id) || ((t.id === "pOld" || t.id === "pNew") && !(sess && sess.master)) || (t.id === "aPin" && !(authMode === "login" && eggOpen));
+  if (digitsOnly) t.value = t.value.replace(/\D/g, "");
+  if (["aNo","aName","aPin","aPin2","aCode","pOld","pNew"].includes(t.id)) fv2[t.id] = t.value;
+});
+window.addEventListener("hashchange", () => { confirmKey = null; rowMenu = null; lineupEdit = null; posOpen = false; admPos = null; renameVal = ""; render(true); window.scrollTo(0, 0); });
+
+/* =========================================================
+   BAŞLAT
+   ========================================================= */
+(async () => {
+  // Başka bir sitenin çerçevesi içinde açılmayı engelle (tıklama tuzağı / clickjacking)
+  if (CONFIGURED && window.top !== window.self){ document.body.innerHTML = "<p style='padding:24px;font-family:sans-serif'>Bu sayfa güvenlik nedeniyle başka bir sitenin içinde açılamaz.</p>"; return; }
+  if (!CONFIGURED && !DEMO){ $("#root").innerHTML = `<div class="notice"><b>Kurulum tamamlanmadı</b>index.html dosyasının başındaki 4 Firebase değerini doldur (KURULUM.pdf, A6 adımı).</div>`; return; }
+  try { api = DEMO ? demoApi() : await firebaseApi(); }
+  catch(e){ $("#root").innerHTML = `<div class="notice"><b>Bağlanılamadı</b>Sayfayı yenile.</div>`; return; }
+  let subscribed = false;
+  setInterval(() => { render(); syncSummaries(); }, 60000);   // oylama açılış/kapanış saatleri için
+  api.onAuth(s => {
+    sess = s; authPhase = "ready";
+    if (s && s.orphan){ authErr = "Kaydın tamamlanmamış görünüyor. Yöneticiye haber ver."; api.logout(); return; }
+    if (s && !subscribed){
+      subscribed = true;
+      api.subscribe((kind, data) => {
+        if (kind === "act"){ const prev = myAct; myAct = data && { w: Number(data.w) || 0, n: data.n | 0, l: !!data.l };
+          if (myAct && !myAct.l && myAct.n >= ACT_WARN && (!prev || prev.n !== myAct.n) && Date.now() < myAct.w + ACT_WIN) toast("Çok hızlı değişiklik yapıyorsun. 10 dakikada " + ACT_MAX + " değişikliği geçersen hesabın 24 saat kilitlenir.");
+          render(); return; }
+        if (kind === "admins" && api.watchLocks) setTimeout(() => { if (isAdmin()) api.watchLocks(); }, 0);
+        if (kind === "locks"){ locks = (data || []).map(a => ({ id: String(a.id), w: Number(a.w) || 0, n: a.n | 0, l: !!a.l })); render(); return; }
+        if (kind.endsWith(":error")){ loaded.add(kind.split(":")[0]); render(); return; }
+        loaded.add(kind);
+        if (kind === "matches"){ matches = data.map(cleanMatch).filter(m => m.id); api.setActive(activeMatches().map(m => m.id)); }
+        else if (kind === "signups") signups = data.map(cleanSignup).filter(s => s.id && s.matchId);
+        else if (kind === "results") results = data.map(cleanResult);
+        else if (kind === "players") players = Object.fromEntries(data.map(p => [String(p.id), cleanPlayer(p)]));
+        else if (kind === "ballots") ballots = data.map(cleanBallot);
+        else if (kind === "admins") admins = data.map(a => ({ id: String(a.id), no: str(a.no, 12), name: str(a.name, 40), master: !!a.master, pwOk: !!a.pwOk }));
+        render(); syncSummaries();
+      });
+    }
+    fv2 = {};
+    if (!s){ authMode = "login"; subscribed = false; loaded = new Set(); matches = []; signups = []; results = []; players = {}; admins = []; ballots = []; regPos = []; selMid = null; resetShown = null; draft = null; formFor = null; }
+    render(true);
+  });
+})();
+
+</script>
+</body>
+</html>
