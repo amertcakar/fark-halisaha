@@ -295,6 +295,9 @@ const QUOTA = "Sitenin bugünkü ücretsiz kullanım sınırı doldu. Her gün 1
 let quotaHit = false;
 const DEMO = !CONFIGURED && typeof demoApi === "function";
 const NAME_RE = /^[A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû .'-]{5,40}$/;
+// Öğrenci numarası: 5-12 karakter, harf ve rakam (küçük harf girilse de büyük harfe çevrilir)
+const NO_RE = /^[0-9A-Z]{5,12}$/;
+const normNo = v => String(v || "").replace(/\s+/g, "").toUpperCase();
 const TS_KEYS = ["startAt", "voteFrom", "voteUntil", "until", "createdAt", "banUntil"];
 // Otomatik kilit: 10 dakikada en fazla 30 değişiklik; aşan hesap 24 saat kilitlenir (sunucu kuralı da aynısı)
 const ACT_MAX = 30, ACT_WIN = 10 * 60000, ACT_LOCK = 24 * 3600000, ACT_WARN = 20;
@@ -317,7 +320,7 @@ async function firebaseApi(){
   const fixTs = o => { for (const k of TS_KEYS.concat(["at"])) if (o[k] && o[k].toMillis) o[k] = o[k].toMillis(); return o; };
   const rows = s => s.docs.map(x => fixTs({ id: x.id, ...x.data({ serverTimestamps: "estimate" }) }));
   const tsIn = o => { const r = { ...o }; for (const k of TS_KEYS) if (typeof r[k] === "number") r[k] = F.Timestamp.fromMillis(r[k]); return r; };
-  const noFromEmail = e => String(e || "").split("@")[0].split(".")[0];
+  const noFromEmail = e => String(e || "").split("@")[0].split(".")[0].toUpperCase();
   let busyAuth = false, authCb = null, unsubs = [], actUnsubs = [], actKey = null, cbRef = null;
   // --- canlı veri + yıllık arşiv birleştirme
   let live = { m: {}, r: {} }, hist = {}, got = { m: false, h: false, r: false };
@@ -443,14 +446,14 @@ async function firebaseApi(){
       on(col("dir"), "players", s => {
         const out = [];
         s.docs.forEach(x => { const sh = x.id.slice(1), data = x.data({ serverTimestamps: "estimate" });
-          for (const [no, e] of Object.entries(data)) if (/^[0-9]{8}$/.test(no) && no.endsWith(sh) && e && typeof e === "object")
+          for (const [no, e] of Object.entries(data)) if (NO_RE.test(no) && no.endsWith(sh) && e && typeof e === "object")
             out.push({ id: no, name: e.n, pos: e.p, banned: e.b, uid: e.u, createdAt: e.c && e.c.toMillis ? e.c.toMillis() : 0, banUntil: e.x && e.x.toMillis ? e.x.toMillis() : 0 }); });
         cb("players", out);
       });
       on(col("admins"), "admins", s => cb("admins", rows(s)));
       // kendi kilit sayacı (1 okuma); adminler ayrıca kilitli hesapları görür
       const me = myNo();
-      if (me && /^[0-9]{8}$/.test(me)) unsubs.push(F.onSnapshot(d("act", me), x => cb("act", x.exists() ? actRow(x) : null), () => {}));
+      if (me && NO_RE.test(me)) unsubs.push(F.onSnapshot(d("act", me), x => cb("act", x.exists() ? actRow(x) : null), () => {}));
       // Sadece bu haftanın maçları canlı okunur; geçmiş maçlar yıllık özet belgelerinden (hist/y2026...) gelir
       on(F.query(col("matches"), F.where("archived", "==", false)), "matches", s => { live.m = {}; s.docs.forEach(x => live.m[x.id] = x.data({ serverTimestamps: "estimate" })); got.m = true; emitMR(); });
       on(col("hist"), "matches", s => { hist = {}; s.docs.forEach(x => { for (const [k, e] of Object.entries(x.data())) if (k !== "_k" && e && e.m) hist[k] = e; }); got.h = true; emitMR(); });
@@ -520,7 +523,7 @@ const POS = { FV: "Forvet", OS: "Orta saha", DF: "Defans", KL: "Kaleci" };
 const FOLD = { "ı":"i", "ş":"s", "ğ":"g", "ü":"u", "ö":"o", "ç":"c", "â":"a", "î":"i", "û":"u" };
 const fold = t => String(t || "").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[ışğüöçâîû]/g, c => FOLD[c]).replace(/\s+/g, " ").trim();
 const srch = { oyuncular: "", istatistik: "", veriler: "", maclar: "" };
-const sKey = (name, no) => fold(name) + (isAdmin() && no ? " " + no : "");
+const sKey = (name, no) => fold(name) + (isAdmin() && no ? " " + String(no).toLowerCase() : "");
 const sHit = (key, q) => { const w = fold(q).split(" ").filter(Boolean); return !w.length || w.every(x => key.includes(x)); };
 
 const sBox = (k, ph) => `<label class="srch">${ICON.search}<input type="search" data-srch="${k}" value="${esc(srch[k])}" placeholder="${ph}" autocomplete="off" enterkeyhint="search"></label>`;
@@ -856,7 +859,7 @@ function viewAuth(){
     <div class="seg"><button data-act="amode" data-m="login" class="${!reg && !rec ? "on" : ""}">Giriş yap</button><button data-act="amode" data-m="register" class="${reg ? "on" : ""}">Kayıt ol</button></div>
     <form id="authForm" autocomplete="on">
       ${rec ? `<p class="q" style="font-size:22px">Şifremi unuttum</p><p class="qsub">Adminden aldığın kodu gir.</p>` : ""}
-      <label class="f"><span>Öğrenci numarası</span><input id="aNo" value="${esc(fv2.aNo || "")}" inputmode="numeric" autocomplete="username" maxlength="12" placeholder="8 haneli numaran" required></label>
+      <label class="f"><span>Öğrenci numarası</span><input id="aNo" value="${esc(fv2.aNo || "")}" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="username" maxlength="12" placeholder="Öğrenci numaran" required></label>
       ${reg ? `<label class="f"><span>Ad soyad</span><input type="text" id="aName" value="${esc(fv2.aName || "")}" autocomplete="name" maxlength="40" placeholder="Örn. Ahmet Yılmaz"></label>
         <label class="f" style="margin-bottom:8px"><span>Hangi mevkilerde oynarsın? En sevdiğinden başlayarak 3 tane seç</span></label>${posPicker(regPos, "reg")}` : ""}
       ${rec ? `<label class="f"><span>Sıfırlama kodu</span><input id="aCode" value="${esc(fv2.aCode || "")}" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="8 haneli kod" class="pin" style="letter-spacing:4px"></label>` : ""}
@@ -1171,7 +1174,7 @@ function viewAdmin(){
     ${adminRows.map(a => `<li class="li"><span class="nm">${a.no ? plink(a.no, a.nm) : esc(a.nm)}</span>${a.no ? `<span class="pos">${esc(a.no)}</span>` : ""}
       ${!a.master && a.id !== sess.uid ? `<button class="textbtn red" data-act="unadmin" data-id="${esc(a.id)}">Çıkar</button>` : ""}</li>`).join("")}</ul>
     <div class="panel" style="margin-top:10px"><label class="f"><span>Öğrenci numarasıyla admin ekle</span></label>
-      <div class="inline"><input id="addAdminIn" inputmode="numeric" maxlength="8" placeholder="8 haneli numara" value="${esc(addAdminNo)}"><button class="btn" data-act="mkadmin">Ekle</button></div></div></section>`;
+      <div class="inline"><input id="addAdminIn" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="12" placeholder="Öğrenci numarası" value="${esc(addAdminNo)}"><button class="btn" data-act="mkadmin">Ekle</button></div></div></section>`;
   const allP = Object.entries(players).sort((a, b) => a[1].name.localeCompare(b[1].name, "tr"));
   h += `<section class="sec"><div class="sh"><h2>Oyuncu verileri</h2><span class="n">${allP.length} kayıt</span></div>
     ${sBox("veriler", "İsim ya da öğrenci no ara")}
@@ -1273,9 +1276,9 @@ async function syncSummaries(){
 document.addEventListener("submit", e => {
   if (e.target.id !== "authForm") return;
   e.preventDefault();
-  const no = $("#aNo").value.trim(), pin = $("#aPin").value.trim();
+  const no = normNo($("#aNo").value), pin = $("#aPin").value.trim();
   authErr = "";
-  if (!/^\d+$/.test(no)) { authErr = "Öğrenci numarası sadece rakamlardan oluşmalı."; return render(true); }
+  if (!/^[0-9A-Z]+$/.test(no)) { authErr = "Öğrenci numarası sadece harf ve rakamdan oluşmalı."; return render(true); }
   if (authMode === "login"){
     if (!/^\d{4,8}$/.test(pin) && !(pin.length >= 8 && pin.length <= 40)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
     busy = true; render(true);
@@ -1283,7 +1286,7 @@ document.addEventListener("submit", e => {
     return;
   }
   const pin2 = ($("#aPin2") || {}).value || "";
-  if (!/^\d{8}$/.test(no)) { authErr = "Öğrenci numarası 8 haneli olmalı."; return render(true); }
+  if (!NO_RE.test(no)) { authErr = "Öğrenci numarası 5-12 karakter olmalı (harf ve rakam)."; return render(true); }
   if (!/^\d{4,8}$/.test(pin)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
   if (pin !== pin2.trim()) { authErr = "Şifreler aynı değil."; return render(true); }
   if (authMode === "recover"){
@@ -1458,7 +1461,7 @@ document.addEventListener("click", e => {
     case "unlock": guard(async () => { await api.unlock(id); toast("Kilit açıldı"); }); break;
     case "reset": { const code = genCode(), until = Date.now() + RESET_MINUTES * 60000; guard(async () => { await api.issueReset(id, code, until); resetShown = { no: id, code, until }; toast("Kod hazır, oyuncuya ilet"); }); break; }
     case "mkadmin": {
-      const no = id || addAdminNo.trim(); const p = players[no];
+      const no = id || normNo(addAdminNo); const p = players[no];
       if (!p){ toast("Bu numarayla kayıtlı oyuncu yok."); return; }
       if (admins.some(q => q.no === no)){ toast("Zaten admin."); return; }
       guard(async () => { await api.addAdmin(p.uid, no); addAdminNo = ""; toast(p.name + " admin yapıldı"); }); break;
@@ -1489,7 +1492,8 @@ document.addEventListener("input", e => {
   else if (t.id === "renameIn") renameVal = t.value;
   else if (t.id === "addAdminIn") addAdminNo = t.value;
   else if (t.dataset.srch){ srch[t.dataset.srch] = t.value; applySearch(t.dataset.srch); return; }
-  const digitsOnly = ["aNo","aPin2","aCode"].includes(t.id) || ((t.id === "pOld" || t.id === "pNew") && !(sess && sess.master)) || (t.id === "aPin" && !(authMode === "login" && eggOpen));
+  if (t.id === "aNo" || t.id === "addAdminIn"){ const v = t.value.replace(/[^0-9a-zA-Z]/g, "").toUpperCase(); if (v !== t.value) t.value = v; if (t.id === "addAdminIn") addAdminNo = v; }
+  const digitsOnly = ["aPin2","aCode"].includes(t.id) || ((t.id === "pOld" || t.id === "pNew") && !(sess && sess.master)) || (t.id === "aPin" && !(authMode === "login" && eggOpen));
   if (digitsOnly) t.value = t.value.replace(/\D/g, "");
   if (["aNo","aName","aPin","aPin2","aCode","pOld","pNew"].includes(t.id)) fv2[t.id] = t.value;
 });
