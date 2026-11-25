@@ -295,8 +295,8 @@ const QUOTA = "Sitenin bugünkü ücretsiz kullanım sınırı doldu. Her gün 1
 let quotaHit = false;
 const DEMO = !CONFIGURED && typeof demoApi === "function";
 const NAME_RE = /^[A-Za-zÇĞİÖŞÜçğıöşüÂâÎîÛû .'-]{5,40}$/;
-// Öğrenci numarası: 5-12 karakter, harf ve rakam (küçük harf girilse de büyük harfe çevrilir)
-const NO_RE = /^[0-9A-Z]{5,12}$/;
+// Öğrenci numarası: tam 8 karakter, harf ve rakam (küçük harf girilse de büyük harfe çevrilir)
+const NO_RE = /^[0-9A-Z]{8}$/;
 const normNo = v => String(v || "").replace(/\s+/g, "").toUpperCase();
 const TS_KEYS = ["startAt", "voteFrom", "voteUntil", "until", "createdAt", "banUntil"];
 // Otomatik kilit: 10 dakikada en fazla 30 değişiklik; aşan hesap 24 saat kilitlenir (sunucu kuralı da aynısı)
@@ -853,18 +853,18 @@ document.addEventListener("focusout", () => setTimeout(() => { if (pending) rend
 /* ---------- giriş / kayıt / şifremi unuttum ---------- */
 function viewAuth(){
   const reg = authMode === "register", rec = authMode === "recover";
-  const pinIn = (id, label, ac) => `<label class="f"><span>${label}</span><input type="password" id="${id}" value="${esc(fv2[id] || "")}" class="pin" inputmode="numeric" maxlength="8" autocomplete="${ac}" placeholder="••••"></label>`;
+  const pinIn = (id, label, ac) => `<label class="f"><span>${label}</span><input type="password" id="${id}" value="${esc(fv2[id] || "")}" class="pin" inputmode="numeric" maxlength="4" autocomplete="${ac}" placeholder="••••"></label>`;
   return `<div class="auth">
     <div class="hero" data-act="egg">${LOGO}<small>HALI SAHA</small></div>
     <div class="seg"><button data-act="amode" data-m="login" class="${!reg && !rec ? "on" : ""}">Giriş yap</button><button data-act="amode" data-m="register" class="${reg ? "on" : ""}">Kayıt ol</button></div>
     <form id="authForm" autocomplete="on">
       ${rec ? `<p class="q" style="font-size:22px">Şifremi unuttum</p><p class="qsub">Adminden aldığın kodu gir.</p>` : ""}
-      <label class="f"><span>Öğrenci numarası</span><input id="aNo" value="${esc(fv2.aNo || "")}" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="username" maxlength="12" placeholder="Öğrenci numaran" required></label>
+      <label class="f"><span>Öğrenci numarası</span><input id="aNo" type="text" value="${esc(fv2.aNo || "")}" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="username" maxlength="8" placeholder="Öğrenci numaran" required></label>
       ${reg ? `<label class="f"><span>Ad soyad</span><input type="text" id="aName" value="${esc(fv2.aName || "")}" autocomplete="name" maxlength="40" placeholder="Örn. Ahmet Yılmaz"></label>
         <label class="f" style="margin-bottom:8px"><span>Hangi mevkilerde oynarsın? En sevdiğinden başlayarak 3 tane seç</span></label>${posPicker(regPos, "reg")}` : ""}
       ${rec ? `<label class="f"><span>Sıfırlama kodu</span><input id="aCode" value="${esc(fv2.aCode || "")}" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="8 haneli kod" class="pin" style="letter-spacing:4px"></label>` : ""}
-      ${reg || rec ? pinIn("aPin", reg ? "Şifre belirle (4-8 rakam)" : "Yeni şifre (4-8 rakam)", "new-password") + pinIn("aPin2", "Şifre tekrar", "new-password")
-        : `<label class="f"><span>Şifre</span><input type="password" id="aPin" value="${esc(fv2.aPin || "")}" class="pin" ${eggOpen ? 'maxlength="40" style="letter-spacing:2px"' : 'inputmode="numeric" maxlength="8"'} autocomplete="current-password" placeholder="••••" required></label>`}
+      ${reg || rec ? pinIn("aPin", reg ? "4 haneli şifre belirle" : "Yeni 4 haneli şifre", "new-password") + pinIn("aPin2", "Şifre tekrar", "new-password")
+        : `<label class="f"><span>Şifre</span><input type="password" id="aPin" value="${esc(fv2.aPin || "")}" class="pin" ${eggOpen ? 'maxlength="40" style="letter-spacing:2px"' : 'inputmode="numeric" maxlength="4"'} autocomplete="current-password" placeholder="••••" required></label>`}
       <button class="btn pri full" type="submit" ${busy ? "disabled" : ""}>${busy ? "Bekle…" : reg ? "Kayıt ol" : rec ? "Şifremi yenile" : "Giriş yap"}</button>
       <p class="err">${esc(authErr)}</p>
     </form>
@@ -1119,8 +1119,8 @@ function viewAccount(){
   }
   h += `<section class="sec"><div class="sh"><h2>${sess.master ? "Admin şifresini değiştir" : "Şifremi değiştir"}</h2></div><div class="panel">
     <div class="fg">
-      <label class="f"><span>Mevcut şifre</span><input type="password" id="pOld" value="${esc(fv2.pOld || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="8"'} autocomplete="current-password"></label>
-      <label class="f"><span>Yeni şifre${sess.master ? " (en az 8 karakter)" : ""}</span><input type="password" id="pNew" value="${esc(fv2.pNew || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="8"'} autocomplete="new-password"></label>
+      <label class="f"><span>Mevcut şifre</span><input type="password" id="pOld" value="${esc(fv2.pOld || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="4"'} autocomplete="current-password"></label>
+      <label class="f"><span>Yeni şifre${sess.master ? " (en az 8 karakter)" : ""}</span><input type="password" id="pNew" value="${esc(fv2.pNew || "")}" ${sess.master ? 'maxlength="40"' : 'class="pin" inputmode="numeric" maxlength="4"'} autocomplete="new-password"></label>
     </div>
     <div class="acts"><button class="btn pri" data-act="chpin">Şifreyi değiştir</button></div>
     
@@ -1174,7 +1174,7 @@ function viewAdmin(){
     ${adminRows.map(a => `<li class="li"><span class="nm">${a.no ? plink(a.no, a.nm) : esc(a.nm)}</span>${a.no ? `<span class="pos">${esc(a.no)}</span>` : ""}
       ${!a.master && a.id !== sess.uid ? `<button class="textbtn red" data-act="unadmin" data-id="${esc(a.id)}">Çıkar</button>` : ""}</li>`).join("")}</ul>
     <div class="panel" style="margin-top:10px"><label class="f"><span>Öğrenci numarasıyla admin ekle</span></label>
-      <div class="inline"><input id="addAdminIn" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="12" placeholder="Öğrenci numarası" value="${esc(addAdminNo)}"><button class="btn" data-act="mkadmin">Ekle</button></div></div></section>`;
+      <div class="inline"><input id="addAdminIn" type="text" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="8" placeholder="Öğrenci numarası" value="${esc(addAdminNo)}"><button class="btn" data-act="mkadmin">Ekle</button></div></div></section>`;
   const allP = Object.entries(players).sort((a, b) => a[1].name.localeCompare(b[1].name, "tr"));
   h += `<section class="sec"><div class="sh"><h2>Oyuncu verileri</h2><span class="n">${allP.length} kayıt</span></div>
     ${sBox("veriler", "İsim ya da öğrenci no ara")}
@@ -1280,14 +1280,14 @@ document.addEventListener("submit", e => {
   authErr = "";
   if (!/^[0-9A-Z]+$/.test(no)) { authErr = "Öğrenci numarası sadece harf ve rakamdan oluşmalı."; return render(true); }
   if (authMode === "login"){
-    if (!/^\d{4,8}$/.test(pin) && !(pin.length >= 8 && pin.length <= 40)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
+    if (!/^\d{4}$/.test(pin) && !(pin.length >= 8 && pin.length <= 40)) { authErr = "Şifre 4 haneli bir sayı olmalı."; return render(true); }
     busy = true; render(true);
     api.login(no, pin).then(() => { busy = false; }).catch(err => { busy = false; authErr = err.message; render(true); });
     return;
   }
   const pin2 = ($("#aPin2") || {}).value || "";
-  if (!NO_RE.test(no)) { authErr = "Öğrenci numarası 5-12 karakter olmalı (harf ve rakam)."; return render(true); }
-  if (!/^\d{4,8}$/.test(pin)) { authErr = "Şifre 4-8 haneli bir sayı olmalı."; return render(true); }
+  if (!NO_RE.test(no)) { authErr = "Öğrenci numarası 8 karakter olmalı (harf ve rakam)."; return render(true); }
+  if (!/^\d{4}$/.test(pin)) { authErr = "Şifre 4 haneli bir sayı olmalı."; return render(true); }
   if (pin !== pin2.trim()) { authErr = "Şifreler aynı değil."; return render(true); }
   if (authMode === "recover"){
     const code = ($("#aCode").value || "").replace(/\D/g, "");
@@ -1376,7 +1376,7 @@ document.addEventListener("click", e => {
     case "chpin": {
       const o = $("#pOld").value.trim(), n = $("#pNew").value.trim();
       if (sess.master){ if (o.length < 4 || n.length < 8){ toast("Yeni admin şifresi en az 8 karakter olmalı."); return; } }
-      else if (!/^\d{4,8}$/.test(o) || !/^\d{4,8}$/.test(n)){ toast("Şifreler 4-8 haneli olmalı."); return; }
+      else if (!/^\d{4}$/.test(o) || !/^\d{4}$/.test(n)){ toast("Şifreler 4 haneli olmalı."); return; }
       guard(async () => { await api.changePin(o, n); if (sess.master) await api.markPw().catch(() => {}); fv2.pOld = fv2.pNew = ""; toast("Şifren değiştirildi"); }); break;
     }
     case "logout": history.replaceState(null, "", location.pathname); api.logout(); break;
